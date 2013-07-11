@@ -1,0 +1,37 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html lang="eng" ng-app="histoApp" xmlns:ng="http://angularjs.org" id="ng-app">
+  <head>
+    <link href="js/bootstrap.min.css" rel="stylesheet">
+    <script type="text/javascript" src="js/angular.min.js"></script>
+    <script type="text/javascript" src="js/underscore-min.js"></script>
+    <script type="text/javascript" src="js/mainController.js"></script>
+    <style type="text/css"> 
+      body{
+        padding: 10px;
+      }
+    </style>
+  </head>
+  <body ng-controller="mainCtrl">
+      <div class="container">
+        <div class="span12">
+          <form class="form-inline">
+          <div class="control-group">
+            <font color="green"> {{ selectedRelease}}</font> selected
+            <select ng-model="selectedRelease" ng-options="value for value in releases"></select>
+            <input type="text" ng-model="search_field">
+            <button class="btn btn-mini" ng-click="getInfo()">GetInfo</button>
+            <img ng-show="pendingHTTP" ng-src="https://twiki.cern.ch/twiki/pub/TWiki/TWikiDocGraphics/processing-bg.gif"/>
+            <span ng-hide="pendingHTTP">
+              Found: <b>{{results_length}}</b>
+            </span>
+          </div>
+          </form>
+        </div>
+      </div>
+      <div>
+        <span ng-repeat="(elem,value) in histogram_info">
+          <custom-histo-log ng-model="value" histoname="elem"></custom-histo-log>
+        </span>
+      </div>
+  </body>
+</html>
