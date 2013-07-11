@@ -139,12 +139,7 @@ def searchInfo(search_input, file_name=None, call_stack_file = None, stack_file 
         fill_dictionaries(file_name)
         work_dir = os.sep.join(file_name.split(os.sep)[:-1]) # get the base path to directory where histograms log exists
         writePickles(work_dir)
-    #while (True):
-        #c = raw_input("Input Search String (regexp/q to quit): ")
-    #c = raw_input(search_input)
     search = None
-#    if c == 'q':
-#        break
     try:
         search = re.compile(search_input)
     except e:
@@ -161,12 +156,3 @@ def searchInfo(search_input, file_name=None, call_stack_file = None, stack_file 
                     print results[histogram].append(calls)
     print "Found %d results" % len(results.keys())                    
     return results
-"""        print "Found %d results" % len(results.keys())
-        for h in sorted(results.keys()):
-            print "%s" % h
-            for calls in results[h]:
-                print calls
-            c = raw_input("Show another one?(q to quit): ")
-            if c == 'q':
-                break
-"""
