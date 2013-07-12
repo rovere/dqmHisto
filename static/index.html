@@ -16,7 +16,7 @@
         <div class="span12">
           <form class="form-inline">
           <div class="control-group">
-            <font color="green"> {{ selectedRelease}}</font> selected
+            Select:
             <select ng-model="selectedRelease" ng-options="value for value in releases"></select>
             <input type="text" ng-model="search_field">
             <button class="btn btn-mini" ng-click="getInfo()">GetInfo</button>
@@ -25,6 +25,14 @@
               Found: <b>{{results_length}}</b>
             </span>
           </div>
+          </form>
+          <form>
+            <div class="control-group">
+              Selected release:
+              <font color="green"> {{ selectedRelease}}</font>
+              Search by histogram name 
+              <input type="checkbox" ng-selected="search_by_histogram_name" ng-model="search_by_histogram_name" style="margin: 0px;"></input>
+            </div>
           </form>
         </div>
       </div>

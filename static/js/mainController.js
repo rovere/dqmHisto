@@ -1,6 +1,15 @@
 function mainCtrl($scope, $http, $location){
+  if ($location.search()['search_histo_name'] == 'true'){
+    $scope.search_by_histogram_name = true;
+  }else{
+      if ($location.search()['search_histo_name'] === undefined){
+        $scope.search_by_histogram_name = true;
+      }else{
+        $scope.search_by_histogram_name = false;
+      }
+  }
   $scope.getInfo = function(){
-    var promise = $http.get('/report/'+$scope.selectedRelease+"/"+$scope.search_field)
+    var promise = $http.get('/report/'+$scope.selectedRelease+"/"+$scope.search_field+"/"+$scope.search_by_histogram_name)
     promise.then(function(data){
       $scope.histogram_info = data.data.data;
       $scope.results_length = _.keys($scope.histogram_info).length;
@@ -33,6 +42,13 @@ function mainCtrl($scope, $http, $location){
    if($scope.search_field){
      $location.search('search', $scope.search_field);
    }
+  });
+  $scope.$watch('search_by_histogram_name', function(){
+    if ($scope.search_by_histogram_name){
+      $location.search('search_histo_name', 'true');
+    }else{
+      $location.search('search_histo_name', 'false');
+    }
   });
   $scope.toggleCollapse = function(isCollapsed){
     if(isCollapsed){

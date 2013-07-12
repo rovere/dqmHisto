@@ -156,3 +156,27 @@ def searchInfo(search_input, file_name=None, call_stack_file = None, stack_file 
                     print results[histogram].append(calls)
     print "Found %d results" % len(results.keys())                    
     return results
+
+def searchInfoBooking(search_input, file_name=None, call_stack_file = None, stack_file = None):
+    if not readPickles(call_stack_file, stack_file):
+        fill_dictionaries(file_name)
+        work_dir = os.sep.join(file_name.split(os.sep)[:-1]) # get the base path to directory where histograms log exists
+        writePickles(work_dir)
+    search = None
+    try:
+        search = re.compile(search_input)
+    except e:
+        return {"error": e}
+    results = {}
+    for histogram in call_stack.keys():
+        results[histogram] = []
+        for calls in call_stack[histogram]:
+            res = re.match(search, stack[calls])
+            if res:
+                for logs in call_stack[histogram]:
+                    m = re.match(function_library, stack[logs])
+                    results[histogram].append("\t%s\n\t  %s" % (m.group(1), m.group(2)))
+                continue
+        if len(results[histogram]) == 0:
+           del(results[histogram]) #delete object from results if no booking function was found
+    return results
