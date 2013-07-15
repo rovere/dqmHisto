@@ -61,26 +61,30 @@ import re
 import hashlib
 import cPickle
 import os
+import sys
 
 stack = {}
 call_stack = {}
+function_stack = {}
 histo = re.compile('^"(.*)"')
 call = re.compile("^\s+\d+/\d+\s+(.*)")
 function_library = re.compile("([^/]*)\s+(.*)")
 
 def hasher(value):
+    """
+    Helper function to return the md5.hexdigest() hash of any
+    value
+    """
 
-    """ Helper function to return the md5.hexdigest() hash of any
-    value"""
-    
     hasher = hashlib.md5()
     hasher.update(value)
     return hasher.hexdigest()
 
 def fill_dictionaries(filename):
-
-    """Helper function to fill the stack and call_stack dictionaries,
-    fetching information out of the supplied filename"""
+    """
+    Helper function to fill the stack and call_stack dictionaries,
+    fetching information out of the supplied filename
+    """
 
     global stack
     global call_stack
@@ -97,53 +101,68 @@ def fill_dictionaries(filename):
             key = hasher(m.group(1))
             if key not in stack.keys():
                 stack[key] = m.group(1)
+                if not m.group(1) in function_stack:
+                    function_stack[m.group(1)] = []
             call_stack[histogram_name].append(key)
+            function_stack[m.group(1)].append(histogram_name)
     print "Done importing information"
 
-def readPickles(call_stack_file, stack_file):
-
-    """Helper function to read call_stack.pkl and stack.pkl files and
+def readPickles(call_stack_file, stack_file, function_stack_file):
+    """
+    Helper function to read call_stack.pkl and stack.pkl files and
     fill in the corresponding dictionaries. The files to be read must
-    ne supplied by the user via the command line a very specific
-    order, namely call_stack.pkl stack.pkl. NO CHECKS ARE PERFORMED TO
-    VALIDATE THE CORRECTNESS OF THE ORDER. """
-    
+    be supplied by the user namely call_stack.pkl stack.pkl. 
+    NO CHECKS ARE PERFORMED TOVALIDATE THE CORRECTNESS OF THE ORDER.
+    """
+
     global stack
     global call_stack
-    if call_stack_file != None and stack_file != None:
+    global function_stack
+    if call_stack_file != None and stack_file != None and function_stack_file != None:
         call_stack_w = open(call_stack_file, 'r')
         stack_w = open(stack_file, 'r')
+        function_stack_w = open(function_stack_file, 'r')
         call_stack = cPickle.load(call_stack_w)
         stack = cPickle.load(stack_w)
+        function_stack = cPickle.load(function_stack_w)
         return True
     return False
 
 def writePickles(work_dir):
-
-    """Helper function to write the content of call_stack and stack
+    """
+    Helper function to write the content of call_stack and stack
     dictionaries into the corresponding pickled files. The output
     filenames are hard-coded in the code and cannot be customized via
-    command line parameters. """
-    
+    command line parameters.
+    """
+
     global stack
     global call_stack
+    global function_stack
     call_stack_w = open(os.path.join(work_dir,'call_stack.pkl'), 'w')
     stack_w = open(os.path.join(work_dir,'stack.pkl'), 'w')
+    function_stack_w = open(os.path.join(work_dir,'function_stack.pkl'), 'w')
     cPickle.dump(call_stack, call_stack_w)
     cPickle.dump(stack, stack_w)
+    cPickle.dump(function_stack, function_stack_w)
     
 
 #if __name__ == '__main__':
-def searchInfo(search_input, file_name=None, call_stack_file = None, stack_file = None):
-    if not readPickles(call_stack_file, stack_file):
+def searchInfo(search_input, file_name=None, call_stack_file = None, stack_file = None, function_stack_file = None):
+    """
+    Main method for searching hashed pickle files. 
+    Input is histogram name to be converted to regexp and searched.
+    """
+
+    if not readPickles(call_stack_file, stack_file, function_stack_file):
         fill_dictionaries(file_name)
         work_dir = os.sep.join(file_name.split(os.sep)[:-1]) # get the base path to directory where histograms log exists
         writePickles(work_dir)
     search = None
     try:
         search = re.compile(search_input)
-    except e:
-        return {"error": e}
+    except Exception:
+        return {"error": "Error parsing regexp"}
     results = {}
     for histogram in call_stack.keys():
         if search and re.match(search, histogram):
@@ -154,29 +173,31 @@ def searchInfo(search_input, file_name=None, call_stack_file = None, stack_file 
                     results[histogram].append("\t%s\n\t  %s" % (m.group(1), m.group(2)))
                 else:
                     print results[histogram].append(calls)
-    print "Found %d results" % len(results.keys())                    
+    print "Found %d results" % len(results.keys())
     return results
 
-def searchInfoBooking(search_input, file_name=None, call_stack_file = None, stack_file = None):
-    if not readPickles(call_stack_file, stack_file):
+def searchFunctionStack(search_input, file_name=None, call_stack_file=None, stack_file=None, function_stack_file=None):
+    if not readPickles(call_stack_file, stack_file, function_stack_file):
         fill_dictionaries(file_name)
         work_dir = os.sep.join(file_name.split(os.sep)[:-1]) # get the base path to directory where histograms log exists
         writePickles(work_dir)
     search = None
     try:
         search = re.compile(search_input)
-    except e:
-        return {"error": e}
+    except Exception:
+        return {"error": "Not a valid regexp"}
     results = {}
-    for histogram in call_stack.keys():
-        results[histogram] = []
-        for calls in call_stack[histogram]:
-            res = re.match(search, stack[calls])
-            if res:
-                for logs in call_stack[histogram]:
-                    m = re.match(function_library, stack[logs])
-                    results[histogram].append("\t%s\n\t  %s" % (m.group(1), m.group(2)))
-                continue
-        if len(results[histogram]) == 0:
-           del(results[histogram]) #delete object from results if no booking function was found
+    for function in function_stack.keys():
+        m = re.match(search,function)
+        if m:
+            #f = re.match(function_library,function)
+            #if f:
+            #    results[f.group(1)] = function_stack[function]
+            for elem in function_stack[function]:
+                results[elem] = [];
+                for call in call_stack[elem]:
+                    m = re.match(function_library, stack[call])
+                    if m:
+                        results[elem].append("\t%s\n\t  %s" % (m.group(1), m.group(2)))
+                    #results[elem].append(stack[call])
     return results

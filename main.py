@@ -35,16 +35,15 @@ def list_reports():
     return json.dumps({"results": info.available_reports})
 
 #@app.route('/test/<release>/<path:search_input>')
-#def get_data_for_booking(release, search_input):
-#    #results = searchLogs(release, search_input,False)
-#    return {"results": "rest function"}
+#def test(release, search_input):
+#    pass
 
 @app.route('/report/<release>/<path:search_input>/<searchByHistogram>')
 def get_data(release,search_input,searchByHistogram):
     if searchByHistogram == 'true':
         results = searchLogs(release, search_input)
     else:
-        results = searchLogs(release, search_input,False)
+        results = get_data_for_booking(release, search_input)
     return results
 
 def searchLogs(release, searchable, search_by_histogram=True):
@@ -53,29 +52,43 @@ def searchLogs(release, searchable, search_by_histogram=True):
     if release not in info.available_reports:
         return json.dumps({"results": "release not in available list"})
     path = os.path.join(os.getcwd(),"..","report",release)
-    if os.path.exists(os.path.join(path,"call_stack.pkl")) and os.path.exists(os.path.join(path,"stack.pkl")):
+    if os.path.exists(os.path.join(path,"call_stack.pkl")) and os.path.exists(os.path.join(path,"stack.pkl")) and os.path.exists(os.path.join(path,"function_stack.pkl")):
         cache_name = release+"-"+searchable
         data = __cache.get(cache_name)
         if data is None:
             call_stack_file = os.path.join(path,"call_stack.pkl")
             stack_file = os.path.join(path,"stack.pkl")
-            if search_by_histogram:
-                data = searchInfo(searchable, call_stack_file = call_stack_file, stack_file = stack_file)
-            else:
-                data = searchInfoBooking(searchable, call_stack_file = call_stack_file, stack_file = stack_file)
-            print len(data.keys())
+            function_stack_file = os.path.join(path,"function_stack.pkl")
+            data = searchInfo(searchable, call_stack_file = call_stack_file, stack_file = stack_file, function_stack_file = function_stack_file)
             __cache.set(cache_name, data,timeout=3000)
+        if "error" in data:
+            return json.dumps(data)
         return json.dumps({"results": "pkls exists", "data":data})
     else:
         cache_name = release+"-"+searchable
         data = __cache.get(cache_name)
         if data is None:
-            if search_by_histogram:
-                data = searchInfo(searchable, file_name=os.path.join(path,"histogramBookingBT.log"))
-            else:
-                data = searchInfoBooking(searchable, file_name=os.path.join(path,"histogramBookingBT.log"))
+            data = searchInfo(searchable, file_name=os.path.join(path,"histogramBookingBT.log"))
             __cache.set(cache_name, data,timeout=3000)
+        if "error" in data:
+            return json.dumps(data)
         return json.dumps({"results for histogramBooking.log": os.path.exists(os.path.join(path,"histogramBookingBT.log")), "data": data})
+
+def get_data_for_booking(release, search_input):
+    cache_name = release+"-"+search_input
+    data = __cache.get(cache_name)
+    if data is None:
+        path = os.path.join(os.getcwd(),"..","report",release)
+        call_stack_file = os.path.join(path,"call_stack.pkl")
+        stack_file = os.path.join(path,"stack.pkl")
+        function_stack_file = os.path.join(path,"function_stack.pkl")
+        if os.path.exists(os.path.join(path,"call_stack.pkl")) and os.path.exists(os.path.join(path,"stack.pkl")) and os.path.exists(os.path.join(path,"function_stack.pkl")):
+            data = searchFunctionStack(search_input, call_stack_file = call_stack_file, stack_file = stack_file, function_stack_file = function_stack_file)
+            __cache.set(cache_name, data,timeout=3000)
+        else:
+            data = searchFunctionStack(search_input,file_name=os.path.join(path,"histogramBookingBT.log"))
+            __cache.set(cache_name, data,timeout=3000)
+    return json.dumps({"data":data})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True, port=80)

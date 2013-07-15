@@ -11,10 +11,14 @@ function mainCtrl($scope, $http, $location){
   $scope.getInfo = function(){
     var promise = $http.get('/report/'+$scope.selectedRelease+"/"+$scope.search_field+"/"+$scope.search_by_histogram_name)
     promise.then(function(data){
-      $scope.histogram_info = data.data.data;
-      $scope.results_length = _.keys($scope.histogram_info).length;
+      if (data.data.error === undefined){
+        $scope.histogram_info = data.data.data;
+        $scope.results_length = _.keys($scope.histogram_info).length;
+      }else{
+        alert("Error while processing: "+ data.data.error);
+      }
     },function(data){
-      alert("Error");
+      alert("Error "+data);
     });
   };
 
@@ -30,7 +34,7 @@ function mainCtrl($scope, $http, $location){
   promise.then(function(data){
     $scope.releases = data.data.results;
   }, function(data){
-    alert("Error");
+    alert("Error "+data);
   });
 
   $scope.$watch('selectedRelease',function(){
