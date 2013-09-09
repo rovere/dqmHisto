@@ -17,7 +17,7 @@ if len(reports_dir) == 0:
 else:
    min_release = min(reports_dir)
 
-xml_data = xml.dom.minidom.parseString(os.popen("curl -s --insecure 'https://cmstags.cern.ch/tc/ReleasesXML/?anytype=1&architecture=slc5_amd64_gcc472'").read())
+xml_data = xml.dom.minidom.parseString(os.popen("curl -s --insecure 'https://cmstags.cern.ch/tc/ReleasesXML/?anytype=1'").read())
 for arch in xml_data.documentElement.getElementsByTagName("architecture"):
     scram_arch = arch.getAttribute('name')
     print scram_arch

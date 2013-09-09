@@ -14,7 +14,8 @@ echo $PATH
 scram p "$1"
 cd "$1/src"
 eval $(scram r -sh)
-addpkg DQMServices/Components
+#addpkg DQMServices/Components
+git cms-addpkg DQMServices/Components
 echo "$LOCALRT"
 scram b -j 2
 sed -i 's/process.DQMStore.verbose = cms.untracked.int32(2)/process.DQMStore.verbose = cms.untracked.int32(5)/g' "$LOCALRT/src/DQMServices/Components/python/test/customDQM.py"
