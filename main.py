@@ -5,7 +5,7 @@
 import os
 import json
 import re
-from flask import Flask, url_for, redirect
+from flask import Flask, url_for, redirect, send_from_directory
 from werkzeug.contrib.cache import SimpleCache
 
 from studyBooking import *
@@ -34,9 +34,13 @@ def list_reports():
     info = MainInfo()
     return json.dumps({"results": info.available_reports})
 
-#@app.route('/test/<release>/<path:search_input>')
-#def test(release, search_input):
-#    pass
+@app.route('/config')
+def test():
+    return send_from_directory('static','config_browser.html')
+
+@app.route('/sequences/<path:report_path>/<string:filename>')
+def sequence_report(report_path,filename):
+    return send_from_directory('/home/DQMHisto/DQMSequences/%s'%(report_path),filename)
 
 @app.route('/report/<release>/<path:search_input>/<searchByHistogram>')
 def get_data(release,search_input,searchByHistogram):
