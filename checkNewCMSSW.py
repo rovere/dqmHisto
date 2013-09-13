@@ -31,7 +31,7 @@ for elem in reports_to_do:
     else:
         if elem > min_release:
             print "Report to do: %s" %(elem)
-#            os.system("./dqmHisto/test.sh "+ elem+"")
+            os.system("./dqmHisto/test.sh "+ elem+"")
             print "Done!"
 
 ##lets check the sequences reports
