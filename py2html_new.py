@@ -11,17 +11,18 @@ import locale
 locale.setlocale(locale.LC_ALL, 'en_US')
 
 class visitor:
-    def __init__(self, out):
+    def __init__(self, out, ignore_igprof):
         self.out = out
+        self.ignore_igprof_ = ignore_igprof
         self.env = os.getenv('CMSSW_RELEASE_BASE')
         self.t = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0}
         self.level_ = 0
         self.level = {}
         self.level[self.level_] = 0
-        
+
     def reset(self):
         self.t = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0}
-        
+
     def enter(self, value):
         if type(value) == cms.Sequence:
             self.out.write('<ol><div class=sequence>%s</div>\n' % value.label())
@@ -58,7 +59,7 @@ class visitor:
             self.out.write( '</li>\n')
     def Fake(self):
         return 'Not_Available'
-    
+
     def dumpProducerOrFilter(self, value):
         type_ = getattr(value, 'type_', self.Fake)
         filename_ = getattr(value, '_filename', self.Fake())
@@ -71,11 +72,14 @@ class visitor:
           toCheck = step
           if toCheck == 'ctor':
             toCheck = type_()
-          #cur = conn.execute("select mainrows.cumulative_count, name from symbols inner join mainrows on mainrows.symbol_id = symbols.id where name like '%s::%s%%';" % (type_(),toCheck))
-          #for r in cur:
-          #  t[counter] = int(r[0])
-          if len(t) != counter+1:
-            t[counter] = 0
+          if not self.ignore_igprof_:
+              cur = conn.execute("select mainrows.cumulative_count, name from symbols inner join mainrows on mainrows.symbol_id = symbols.id where name like '%s::%s%%';" % (type_(),toCheck))
+              for r in cur:
+                t[counter] = int(r[0])
+              if len(t) != counter+1:
+                t[counter] = 0
+          else:
+              t[counter] = 0
           counter += 1
         stats = '(%s, %s, %s, %s, %s) %s' % (prettyInt(t[0]), \
                                              prettyInt(t[1]), \
@@ -141,16 +145,67 @@ def checkRel():
         print 'You must set a proper CMSSW environment first. Quitting.'
         sys.exit(1)
 
+def dumpESProducer(value, ignore_igprof):
+    type_ = getattr(value, 'type_', 'Not Available')
+    filename_ = getattr(value, '_filename', 'Not Available')
+    lbl_ = getattr(value, 'label_', 'Not Available')
+    dumpConfig_ = getattr(value, 'dumpConfig', 'Not Available')
+    link = ''
+    counter = 0
+    t = {}
+    for step in steps:
+      toCheck = step
+      if toCheck == 'ctor':
+        toCheck = type_()
+      if not ignore_igprof:
+          cur = conn.execute("select mainrows.cumulative_count, name from symbols inner join mainrows on mainrows.symbol_id = symbols.id where name like '%s::%s%%';" % (type_(),toCheck))
+          for r in cur:
+            t[counter] = int(r[0])
+          if len(t) != counter+1:
+            t[counter] = 0
+      else:
+          t[counter] = 0
+      counter += 1
+    stats = '(%s, %s, %s, %s, %s) %s' % (prettyInt(t[0]), \
+                                         prettyInt(t[1]), \
+                                         prettyInt(t[2]), \
+                                         prettyInt(t[3]), \
+                                         prettyInt(t[4]), \
+                                         prettyFloat((t[0]+t[1]+t[2]+t[3]+t[4])/1024./1024.))
+    link = '<a href=http://cmslxr.fnal.gov/lxr/ident?i=' + type_() + '>' + type_() + '</a> ' + stats + '\n'
+    out.write(link + ', label <a href=' + lbl_() + '.html>' + lbl_() +'</a>, defined in ' + filename_ + '</li>\n')
+    tmpout = open('./html/'+lbl_() + '.html','w')
+    tmpout.write(preamble())
+    tmpout.write( '<pre>\n')
+    cutAtColumn = 978
+    gg = dumpConfig_()
+    for line in gg.split('\n'):
+        blocks = len(line)/cutAtColumn + 1
+        for i in range(0,blocks):
+            tmpout.write('%s' % line[i*cutAtColumn:(i+1)*cutAtColumn])
+            if blocks > 1 and not (i == blocks):
+                tmpout.write('\\ \n')
+            else:
+                tmpout.write('\n')
+    tmpout.write( '<pre>\n')
+    tmpout.write(endDocument())
+    tmpout.close()
+    return t
+
 # Check argument list
-#if len(sys.argv) < 3:
-#    print 'Error.\nUsage py2tex python_config_file igprof_report'
-#    sys.exit(1)
-#else:
+ignore_igprof = True
+if len(sys.argv) < 3:
+    print 'Warning.\nNo igprof_report supplied, setting all numbers to 0.'
+else:
+    ignore_igprof = False
+
 toload = sys.argv[1]
 toload = re.sub('\.py', '', toload)
 towrite = 'index.html'
 
-#    conn = sqlite3.connect(sys.argv[2])
+if not ignore_igprof:
+    conn = sqlite3.connect(sys.argv[2])
+
 steps = ('ctor', 'beginJob', 'beginRun', 'beginLuminosityBlock', 'analyze')
 pwd = os.getenv('PWD') +'/'
 sys.path.append(pwd)
@@ -161,8 +216,6 @@ try:
     a = __import__(str(toload))
 except:
     print 'Import Failed, quitting...'
-    import traceback
-    print traceback.print_exc(file=sys.stdout)
     sys.exit(1)
 
 if not os.path.exists(pwd+'html'):
@@ -194,7 +247,7 @@ except:
 
 out.write(preamble())
 out.write( '<h1>Paths</h1>\n')
-v = visitor(out)
+v = visitor(out, ignore_igprof)
 for k in a.process.paths.keys():
     out.write('<H2>%s</H2>\n' % k)
     a.process.paths[k].visit(v)
@@ -208,4 +261,10 @@ for k in a.process.endpaths.keys():
     a.process.endpaths[k].visit(v)
     v.reset()
 
+out.write( '<h1>ES Producers</h1>\n')
+for k in a.process.es_producers_().keys():
+    out.write('<H2>%s</H2>\n' % k)
+    dumpESProducer(a.process.es_producers[k], ignore_igprof)
+
 out.write(endDocument())
+
