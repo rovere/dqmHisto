@@ -25,7 +25,10 @@ class visitor:
 
     def enter(self, value):
         if type(value) == cms.Sequence:
-            self.out.write('<ol><div class=sequence>%s</div>\n' % value.label())
+            if (value.hasLabel_()):
+                self.out.write('<ol><div class=sequence>%s</div>\n' % value.label_())
+            else:
+                self.out.write('<ol><div class=sequence>%s</div>\n' % '--No label found--')
             self.level_ +=1
             self.level[self.level_] = 0
         else:
@@ -41,14 +44,24 @@ class visitor:
                 self.level[self.level_] += int(mem[i])
     def leave(self, value):
         if type(value) == cms.Sequence:
-            self.out.write('(%s, %s, %s, %s, %s) %f [%f] - %s' % (prettyInt(self.t[0]),\
+            if value.hasLabel_():
+                self.out.write('(%s, %s, %s, %s, %s) %f [%f] - %s' % (prettyInt(self.t[0]),\
                                                                   prettyInt(self.t[1]),\
                                                                   prettyInt(self.t[2]),\
                                                                   prettyInt(self.t[3]),\
                                                                   prettyInt(self.t[4]),\
                                                                   (self.t[0]+self.t[1]+self.t[2]+self.t[3]+self.t[4])/1024./1024.,\
                                                                   self.level[self.level_]/1024./1024.,\
-                                                                  value.label()))
+                                                                  value.label_()))
+            else:
+                self.out.write('(%s, %s, %s, %s, %s) %f [%f] - %s' % (prettyInt(self.t[0]),\
+                                                                  prettyInt(self.t[1]),\
+                                                                  prettyInt(self.t[2]),\
+                                                                  prettyInt(self.t[3]),\
+                                                                  prettyInt(self.t[4]),\
+                                                                  (self.t[0]+self.t[1]+self.t[2]+self.t[3]+self.t[4])/1024./1024.,\
+                                                                  self.level[self.level_]/1024./1024.,\
+                                                                  '--No label found--'))
 #            print self.level
             self.level_ -= 1
             if self.level_ > 0:

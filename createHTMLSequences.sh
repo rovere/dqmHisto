@@ -32,7 +32,7 @@ createSequences()
     #igprof-analyse -g -d -v -p -r MEM_TOT -s step2_DQM_RECO_DQM.gz | sqlite3 step2_DQM_RECO_DQM_TOT.sql3
     #igprof-analyse -g -d -v -p -r MEM_LIVE -s ${SCENARIO}_1.gz | sqlite3 igreport_MEMLIVE_
     #./py2html_new.py step2_DQM_RECO_DQM.py >/dev/null
-    ./py2html_new.py step2_DQM_RECO_DQM.py step2_DQM_RECO_DQM_LIVE.sql3
+    ./py2html_new.py step2_DQM_RECO_DQM.py #step2_DQM_RECO_DQM_LIVE.sql3
     if [ $? -ne 0 ]; then
 	return 1
     fi
@@ -46,7 +46,7 @@ createSequences()
 #    igprof-analyse -g -d -v -p -r MEM_LIVE -s step2_DQM_RECO_VALIDATION.gz | sqlite3 step2_DQM_RECO_VALIDATION_LIVE.sql3
     #igprof-analyse -g -d -v -p -r MEM_TOT -s step2_DQM_RECO_VALIDATION.gz | sqlite3 step2_DQM_RECO_VALIDATION_TOT.sql3
     #./py2html_new.py step2_DQM_RECO_VALIDATION.py >/dev/null
-    ./py2html_new.py step2_DQM_RECO_VALIDATION.py step2_DQM_RECO_VALIDATION_LIVE.sql3
+    ./py2html_new.py step2_DQM_RECO_VALIDATION.py #step2_DQM_RECO_VALIDATION_LIVE.sql3
     if [ $? -ne 0 ]; then
         return 1
     fi
@@ -60,7 +60,7 @@ createSequences()
 #    igprof-analyse -g -d -v -p -r MEM_LIVE -s step2_DQM_RECO_VALIDATION.gz | sqlite3 step2_DQM_RECO_VALIDATION_LIVE.sql3
     #igprof-analyse -g -d -v -p -r MEM_TOT -s step2_DQM_RECO_VALIDATION.gz | sqlite3 step2_DQM_RECO_VALIDATION_TOT.sql3
     #./py2html_new.py step2_DQM_RECO_VALIDATION.py >/dev/null
-    ./py2html_new.py step2_DQM_RECO_VALIDATION.py step2_DQM_RECO_VALIDATION_LIVE.sql3
+    ./py2html_new.py step2_DQM_RECO_VALIDATION.py #step2_DQM_RECO_VALIDATION_LIVE.sql3
     if [ $? -ne 0 ]; then
 	return 1
     fi
@@ -74,7 +74,7 @@ createSequences()
 #    igprof-analyse -g -d -v -p -r MEM_LIVE -s step2_DQM_RECO_VALIDATION.gz | sqlite3 step2_DQM_RECO_VALIDATION_LIVE.sql3
     #igprof-analyse -g -d -v -p -r MEM_TOT -s step2_DQM_RECO_VALIDATION.gz | sqlite3 step2_DQM_RECO_VALIDATION_TOT.sql3
     #./py2html_new.py step2_DQM_RECO_VALIDATION.py >/dev/null
-    ./py2html_new.py step2_DQM_RECO_VALIDATION.py step2_DQM_RECO_VALIDATION_LIVE.sql3
+    ./py2html_new.py step2_DQM_RECO_VALIDATION.py #step2_DQM_RECO_VALIDATION_LIVE.sql3
     if [ $? -ne 0 ]; then
 	return 1
     fi
@@ -88,7 +88,7 @@ createSequences()
 #    igprof-analyse -g -d -v -p -r MEM_LIVE -s step3_HARVESTING.gz | sqlite3 step3_HARVESTING_LIVE.sql3
     #igprof-analyse -g -d -v -p -r MEM_TOT -s step3_HARVESTING.gz | sqlite3 step3_HARVESTING_LIVE.sql3
     #./py2html_new.py step3_HARVESTING.py >/dev/null
-    ./py2html_new.py step3_HARVESTING.py step3_HARVESTING_LIVE.sql3
+    ./py2html_new.py step3_HARVESTING.py #step3_HARVESTING_LIVE.sql3
     if [ $? -ne 0 ]; then
 	return 1
     fi
@@ -99,7 +99,7 @@ createSequences()
 
 makeSequences()
 {
-  for SCENARIO in pp HeavyIons #cosmics
+  for SCENARIO in cosmics pp HeavyIons
   do
     createSequences
   done
