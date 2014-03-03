@@ -17,7 +17,7 @@ if len(reports_dir) == 0:
 else:
    min_release = min(reports_dir)
 
-xml_data = xml.dom.minidom.parseString(os.popen("curl -s --insecure 'https://cmstags.cern.ch/tc/ReleasesXML/?anytype=1'").read())
+xml_data = xml.dom.minidom.parseString(os.popen("curl -s --insecure 'https://cmssdt.cern.ch/SDT/cgi-bin/ReleasesXML/?anytype=1'").read())
 for arch in xml_data.documentElement.getElementsByTagName("architecture"):
     scram_arch = arch.getAttribute('name')
     print scram_arch
@@ -29,7 +29,7 @@ for elem in reports_to_do:
     if elem in reports_dir:
         print "%s report already exists" %(elem)
     else:
-        if elem > min_release:
+        if elem > min_release and elem != 'CMSSW_7_0_0_XROOTD':
             print "Report to do: %s" %(elem)
             os.system("./dqmHisto/test.sh "+ elem+"")
             print "Done!"
@@ -63,7 +63,7 @@ for elem in reports_to_do:
     if elem in existing_releases:
         print "SEQUENCES > %s report already exists" %(elem)
     else:
-        if elem > min_release:
+        if elem > min_release and elem != 'CMSSW_7_0_0_XROOTD' :
             print "SEQUENCES > Report to do: %s" %(elem)
             print "SEQUENCES > %s" %(os.getcwd())
             os.system("./dqmHisto/createHTMLSequences.sh "+elem+"")
