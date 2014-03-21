@@ -8,7 +8,9 @@ It is being run by acrontab every midnight
 
 import os
 import xml.dom.minidom
+from time import gmtime, strftime
 
+print "I started: %s" % (strftime("%Y-%m-%d %H:%M:%S", gmtime()))
 os.chdir("/home/DQMHisto")
 reports_dir = os.listdir("report");
 reports_to_do = []
@@ -29,7 +31,8 @@ for elem in reports_to_do:
     if elem in reports_dir:
         print "%s report already exists" %(elem)
     else:
-        if elem > min_release and elem != 'CMSSW_7_0_0_XROOTD':
+        if ((elem > min_release and elem != 'CMSSW_7_0_0_XROOTD') or elem.find('SLHC') != -1):
+        #if elem == 'CMSSW_7_1_0_pre3': #test purposes only
             print "Report to do: %s" %(elem)
             os.system("./dqmHisto/test.sh "+ elem+"")
             print "Done!"
@@ -63,7 +66,8 @@ for elem in reports_to_do:
     if elem in existing_releases:
         print "SEQUENCES > %s report already exists" %(elem)
     else:
-        if elem > min_release and elem != 'CMSSW_7_0_0_XROOTD' :
+        if ((elem > min_release and elem != 'CMSSW_7_0_0_XROOTD') or elem.find('SLHC') != -1):
+        #if elem == 'CMSSW_7_1_0_pre3': #test purposes only
             print "SEQUENCES > Report to do: %s" %(elem)
             print "SEQUENCES > %s" %(os.getcwd())
             os.system("./dqmHisto/createHTMLSequences.sh "+elem+"")
