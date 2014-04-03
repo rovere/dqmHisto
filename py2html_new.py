@@ -26,18 +26,18 @@ class visitor:
     def enter(self, value):
         if type(value) == cms.Sequence:
             if (value.hasLabel_()):
-                self.out.write('<ol><div class=sequence>%s</div>\n' % value.label_())
+                self.out.write('<ol><li class=sequence>%s</li>\n' % value.label_())
             else:
-                self.out.write('<ol><div class=sequence>%s</div>\n' % '--No label found--')
+                self.out.write('<ol><li class=sequence>%s</li>\n' % '--No label found--')
             self.level_ +=1
             self.level[self.level_] = 0
         else:
             if type(value) == cms.EDAnalyzer:
-                self.out.write( '<li>EDAnalyzer ' )
+                self.out.write( '<li class="EDAnalyzer">EDAnalyzer ' )
             elif type(value) == cms.EDProducer:
-                self.out.write( '<li>EDProducer ' )
+                self.out.write( '<li class="EDProducer">EDProducer ' )
             elif type(value) == cms.EDFilter:
-                self.out.write( '<li>EDFilter ' )
+                self.out.write( '<li class="EDFilter">EDFilter ' )
             mem = self.dumpProducerOrFilter(value)
             for i in range(len(mem)):
                 self.t[i] += int(mem[i])
@@ -45,7 +45,7 @@ class visitor:
     def leave(self, value):
         if type(value) == cms.Sequence:
             if value.hasLabel_():
-                self.out.write('(%s, %s, %s, %s, %s) %f [%f] - %s' % (prettyInt(self.t[0]),\
+                self.out.write('<span style="color:#000000">(%s, %s, %s, %s, %s) %f [%f] - %s </span>' % (prettyInt(self.t[0]),\
                                                                   prettyInt(self.t[1]),\
                                                                   prettyInt(self.t[2]),\
                                                                   prettyInt(self.t[3]),\
@@ -54,7 +54,7 @@ class visitor:
                                                                   self.level[self.level_]/1024./1024.,\
                                                                   value.label_()))
             else:
-                self.out.write('(%s, %s, %s, %s, %s) %f [%f] - %s' % (prettyInt(self.t[0]),\
+                self.out.write('<span style="color:#000000">(%s, %s, %s, %s, %s) %f [%f] - %s </span>' % (prettyInt(self.t[0]),\
                                                                   prettyInt(self.t[1]),\
                                                                   prettyInt(self.t[2]),\
                                                                   prettyInt(self.t[3]),\
@@ -94,7 +94,7 @@ class visitor:
           else:
               t[counter] = 0
           counter += 1
-        stats = '(%s, %s, %s, %s, %s) %s' % (prettyInt(t[0]), \
+        stats = '<span style="color:#000000">(%s, %s, %s, %s, %s) %s </span>' % (prettyInt(t[0]), \
                                              prettyInt(t[1]), \
                                              prettyInt(t[2]), \
                                              prettyInt(t[3]), \
@@ -140,6 +140,11 @@ def preamble():
   .sequence {
    font-weight: bold;
   }
+  li.Path       {font-style:bold;   color: #03C;}
+  li.Sequence   {font-style:bold;   color: #09F;}
+  li.EDProducer {font-style:italic; color: #a80000;}
+  li.EDFilter   {font-style:italic; color: #F90;}
+  li.EDAnalyzer {font-style:italic; color: #360;}
 </style>
  </head>
 
@@ -179,7 +184,7 @@ def dumpESProducer(value, ignore_igprof):
       else:
           t[counter] = 0
       counter += 1
-    stats = '(%s, %s, %s, %s, %s) %s' % (prettyInt(t[0]), \
+    stats = '<span style="color:#000000">(%s, %s, %s, %s, %s) %s </span>' % (prettyInt(t[0]), \
                                          prettyInt(t[1]), \
                                          prettyInt(t[2]), \
                                          prettyInt(t[3]), \
@@ -259,14 +264,14 @@ except:
     os.unlink('dummy.pyc')
 
 out.write(preamble())
-out.write( '<h1>Paths</h1>\n')
+out.write( '<h1>Paths</h1><ol>\n')
 v = visitor(out, ignore_igprof)
 for k in a.process.paths.keys():
-    out.write('<H2>%s</H2>\n' % k)
+    out.write('<li class="Path">%s</li>\n' % k)
     a.process.paths[k].visit(v)
     v.reset()
 
-out.write( '<h1>End Paths</h1>\n')
+out.write( '</ol><h1>End Paths</h1>\n')
 v.reset()
 
 for k in a.process.endpaths.keys():

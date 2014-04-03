@@ -31,11 +31,13 @@ for elem in reports_to_do:
     if elem in reports_dir:
         print "%s report already exists" %(elem)
     else:
-        if ((elem > min_release and elem != 'CMSSW_7_0_0_XROOTD') or elem.find('SLHC') != -1):
-        #if elem == 'CMSSW_7_1_0_pre3': #test purposes only
-            print "Report to do: %s" %(elem)
-            os.system("./dqmHisto/test.sh "+ elem+"")
-            print "Done!"
+        if elem.find('SLHC') != -1:
+            if ((elem > min_release and elem != 'CMSSW_7_0_0_XROOTD')):
+            #if elem == 'CMSSW_7_1_0_pre3': #test purposes only
+                print "Report to do: %s" %(elem)
+                os.system("./dqmHisto/test.sh "+ elem+"")
+                print "Done!"
+                break  #we work only on single release per day
 
 ##lets check the sequences reports
 os.chdir("/home/DQMHisto")
@@ -61,14 +63,15 @@ for arch in xml_data.documentElement.getElementsByTagName("architecture"):
         release = str(project.getAttribute('label'))
         reports_to_do.append(release)
 
-print "##: %s"%(existing_releases)
 for elem in reports_to_do:
     if elem in existing_releases:
         print "SEQUENCES > %s report already exists" %(elem)
     else:
-        if ((elem > min_release and elem != 'CMSSW_7_0_0_XROOTD') or elem.find('SLHC') != -1):
-        #if elem == 'CMSSW_7_1_0_pre3': #test purposes only
-            print "SEQUENCES > Report to do: %s" %(elem)
-            print "SEQUENCES > %s" %(os.getcwd())
-            os.system("./dqmHisto/createHTMLSequences.sh "+elem+"")
-            print "SEQUENCES > Done!"
+        if elem.find('SLHC') != -1:
+            if ((elem > min_release and elem != 'CMSSW_7_0_0_XROOTD')):
+            #if elem == 'CMSSW_7_1_0_pre3': #test purposes only
+                print "SEQUENCES > Report to do: %s" %(elem)
+                print "SEQUENCES > %s" %(os.getcwd())
+                os.system("./dqmHisto/createHTMLSequences.sh "+elem+"")
+                print "SEQUENCES > Done!"
+                break
