@@ -32,7 +32,7 @@ function mainCtrl($scope, $http, $location){
   $scope.releases = "CMSSW_X_Y_Z";
   var promise = $http.get('/list_reports');
   promise.then(function(data){
-    $scope.releases = data.data.results;
+    $scope.releases = data.data.results.sort();
   }, function(data){
     alert("Error "+data);
   });

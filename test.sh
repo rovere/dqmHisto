@@ -1,10 +1,10 @@
 #!/bin/bash
 
 #  Shell script to set CMSSW release, check-out DQM Tests.
-#  Runs whiteRabbit's 11th test with verbosity set to 5 to get histogram booking log file
+#  Runs whiteRabbit's 3rd test with verbosity set to 5 to get histogram booking log file
 
-export SCRAM_ARCH="slc5_amd64_gcc472"
-echo $SCRAM_ARCH
+#export SCRAM_ARCH="slc5_amd64_gcc472"
+#echo $SCRAM_ARCH
 echo "working for $1"
 source /afs/cern.ch/cms/LCG/LCG-2/UI/cms_ui_env.sh
 export PATH=$PATH:/afs/cern.ch/cms/common

@@ -86,11 +86,14 @@ class visitor:
           if toCheck == 'ctor':
             toCheck = type_()
           if not self.ignore_igprof_:
+            try:
               cur = conn.execute("select mainrows.cumulative_count, name from symbols inner join mainrows on mainrows.symbol_id = symbols.id where name like '%s::%s%%';" % (type_(),toCheck))
               for r in cur:
                 t[counter] = int(r[0])
               if len(t) != counter+1:
                 t[counter] = 0
+            except:
+              t[counter] = 0
           else:
               t[counter] = 0
           counter += 1
@@ -176,11 +179,14 @@ def dumpESProducer(value, ignore_igprof):
       if toCheck == 'ctor':
         toCheck = type_()
       if not ignore_igprof:
+        try:
           cur = conn.execute("select mainrows.cumulative_count, name from symbols inner join mainrows on mainrows.symbol_id = symbols.id where name like '%s::%s%%';" % (type_(),toCheck))
           for r in cur:
             t[counter] = int(r[0])
           if len(t) != counter+1:
             t[counter] = 0
+        except:
+          t[counter] = 0
       else:
           t[counter] = 0
       counter += 1

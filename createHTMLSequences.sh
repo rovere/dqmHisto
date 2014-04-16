@@ -20,7 +20,7 @@ removeRelease()
     cd ../..
     ls -lh
     echo "Lets remove release from working space: $RELEASE"
-    rm -rf $RELEASE
+#    rm -rf $RELEASE
 }
 
 createSequences()
@@ -29,12 +29,12 @@ createSequences()
     pwd & ls
     ##GEN-SIM step
     cmsDriver.py SingleMuPt10.cfi -s GEN,SIM,DIGI:pdigi_valid,L1,DIGI2RAW,HLT:GRun \
-      -n 10 --eventcontent FEVTDEBUGHLT --datatier FEVTDEBUGHLT \
+      -n 2 --eventcontent FEVTDEBUGHLT --datatier FEVTDEBUGHLT \
       --conditions auto:startup_GRun --mc --no_exec
     cmsRun SingleMuPt10_cfi_GEN_SIM_DIGI_L1_DIGI2RAW_HLT.py
 
     ##DQM step
-    cmsDriver.py step2_MC1_4 -s RAW2DIGI,RECO,DQM -n 10 \
+    cmsDriver.py step2_MC1_4 -s RAW2DIGI,RECO,DQM -n 2 \
       --filein file:SingleMuPt10_cfi_GEN_SIM_DIGI_L1_DIGI2RAW_HLT.root \
       --eventcontent RECOSIM,DQM --datatier RECOSIM,DQMROOT --conditions auto:mc \
       --mc --no_exec --scenario ${SCENARIO}
@@ -53,7 +53,7 @@ createSequences()
     sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_DQM -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}/step2/html/index.html\" >${RELEASE} - Step2 - DQM </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
 
     ##Validation step
-    cmsDriver.py step2_MC1_4 -s RAW2DIGI,RECO,VALIDATION -n 10 \
+    cmsDriver.py step2_MC1_4 -s RAW2DIGI,RECO,VALIDATION -n 2 \
       --filein file:SingleMuPt10_cfi_GEN_SIM_DIGI_L1_DIGI2RAW_HLT.root \
       --eventcontent RECOSIM,DQM --datatier RECOSIM,DQMROOT --conditions auto:mc --mc \
       --no_exec --scenario ${SCENARIO}
@@ -71,7 +71,7 @@ createSequences()
     sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_VAL -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}__val/step2/html/index.html\" >${RELEASE} - Step2 - VALIDATION </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
 
     #Validation:preprod
-    cmsDriver.py step2_MC1_4 -s RAW2DIGI,RECO,VALIDATION:validation_preprod -n 10 \
+    cmsDriver.py step2_MC1_4 -s RAW2DIGI,RECO,VALIDATION:validation_preprod -n 2 \
       --filein file:SingleMuPt10_cfi_GEN_SIM_DIGI_L1_DIGI2RAW_HLT.root \
       --eventcontent RECOSIM,DQM --datatier RECOSIM,DQMROOT --conditions auto:mc --mc \
       --no_exec --scenario ${SCENARIO}
@@ -89,7 +89,7 @@ createSequences()
     sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_VALPREPROD -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}__valpreprod/step2/html/index.html\" >${RELEASE} - Step2 - VALIDATION PREPROD </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
 
     #Validation:prod
-    cmsDriver.py step2_MC1_4 -s RAW2DIGI,RECO,VALIDATION:validation_prod -n 10 \
+    cmsDriver.py step2_MC1_4 -s RAW2DIGI,RECO,VALIDATION:validation_prod -n 2 \
       --filein file:SingleMuPt10_cfi_GEN_SIM_DIGI_L1_DIGI2RAW_HLT.root \
       --eventcontent RECOSIM,DQM --datatier RECOSIM,DQMROOT --conditions auto:mc --mc \
       --no_exec --scenario ${SCENARIO}
