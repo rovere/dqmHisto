@@ -11,8 +11,9 @@ import locale
 locale.setlocale(locale.LC_ALL, 'en_US')
 
 class visitor:
-    def __init__(self, out, ignore_igprof):
+    def __init__(self, out, process, ignore_igprof):
         self.out = out
+        self.process_ = process
         self.ignore_igprof_ = ignore_igprof
         self.env = os.getenv('CMSSW_RELEASE_BASE')
         self.t = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0}
@@ -70,14 +71,15 @@ class visitor:
             self.out.write( '</ol>\n')
         else:
             self.out.write( '</li>\n')
-    def Fake(self):
+
+    def fake(self):
         return 'Not_Available'
 
     def dumpProducerOrFilter(self, value):
-        type_ = getattr(value, 'type_', self.Fake)
-        filename_ = getattr(value, '_filename', self.Fake())
-        lbl_ = getattr(value, 'label_', self.Fake)
-        dumpConfig_ = getattr(value, 'dumpConfig', self.Fake)
+        type_ = getattr(value, 'type_', self.fake)
+        filename_ = getattr(value, '_filename', self.fake())
+        lbl_ = getattr(value, 'label_', self.fake)
+        dumpConfig_ = getattr(value, 'dumpConfig', self.fake)
         link = ''
         counter = 0
         t = {}
@@ -98,30 +100,40 @@ class visitor:
               t[counter] = 0
           counter += 1
         stats = '<span style="color:#000000">(%s, %s, %s, %s, %s) %s </span>' % (prettyInt(t[0]), \
-                                             prettyInt(t[1]), \
-                                             prettyInt(t[2]), \
-                                             prettyInt(t[3]), \
-                                             prettyInt(t[4]), \
-                                             prettyFloat((t[0]+t[1]+t[2]+t[3]+t[4])/1024./1024.))
+                                                                                 prettyInt(t[1]), \
+                                                                                 prettyInt(t[2]), \
+                                                                                 prettyInt(t[3]), \
+                                                                                 prettyInt(t[4]), \
+                                                                                 prettyFloat((t[0]+t[1]+t[2]+t[3]+t[4])/1024./1024.))
         link = '<a href=http://cmslxr.fnal.gov/lxr/ident?i=' + type_() + '>' + type_() + '</a> ' + stats + '\n'
         out.write(link + ', label <a href=' + lbl_() + '.html>' + lbl_() +'</a>, defined in ' + filename_ + '</li>\n')
         tmpout = open('./html/'+lbl_() + '.html','w')
         tmpout.write(preamble())
         tmpout.write( '<pre>\n')
-        cutAtColumn = 978
         gg = dumpConfig_()
-        for line in gg.split('\n'):
-            blocks = len(line)/cutAtColumn + 1
-            for i in range(0,blocks):
-                tmpout.write('%s' % line[i*cutAtColumn:(i+1)*cutAtColumn])
-                if blocks > 1 and not (i == blocks):
-                    tmpout.write('\\ \n')
-                else:
-                    tmpout.write('\n')
+        self.printAndExpandRefs(gg.split('\n'), tmpout, '')
         tmpout.write( '<pre>\n')
         tmpout.write(endDocument())
         tmpout.close()
         return t
+
+    def printAndExpandRefs(self, lines, tmpout, indent):
+        cutAtColumn = 978
+        for line in lines:
+            refs = re.search("refToPSet_\s+=\s+.*'(.*?)'", line)
+            blocks = len(line)/cutAtColumn + 1
+            for i in range(0,blocks):
+                tmpout.write('%s%s' % (indent, line[i*cutAtColumn:(i+1)*cutAtColumn]))
+                if blocks > 1 and not (i == blocks):
+                    tmpout.write('\\ \n')
+                else:
+                    tmpout.write('\n')
+            if refs:
+                indent = '  '.join((indent, ''))
+                tmpout.write('%s----------------------------------------------------------\n' % indent)
+                self.printAndExpandRefs(getattr(self.process_, refs.group(1)).dumpPython().split('\n'), tmpout, indent)
+                tmpout.write('%s----------------------------------------------------------\n' % indent)
+        indent = indent[:-2]
 
 def prettyInt(val):
     return locale.format("%d", int(val), grouping=True).replace(',', "'")
@@ -271,7 +283,7 @@ except:
 
 out.write(preamble())
 out.write( '<h1>Paths</h1><ol>\n')
-v = visitor(out, ignore_igprof)
+v = visitor(out, a.process, ignore_igprof)
 for k in a.process.paths.keys():
     out.write('<li class="Path">%s</li>\n' % k)
     a.process.paths[k].visit(v)
