@@ -58,19 +58,24 @@ else:
 #xml_data = xml.dom.minidom.parseString(os.popen("curl -s --insecure 'https://cmstags.cern.ch/tc/ReleasesXML/?anytype=1").read())
 for arch in xml_data.documentElement.getElementsByTagName("architecture"):
     scram_arch = arch.getAttribute('name')
-    print scram_arch
     for project in arch.getElementsByTagName("project"):
         release = str(project.getAttribute('label'))
-        reports_to_do.append(release)
-
+        reports_to_do.append((release, scram_arch))
 for elem in reports_to_do:
-    if elem in existing_releases:
-        print "SEQUENCES > %s report already exists" %(elem)
+    if elem[0] in existing_releases:
+        print "SEQUENCES > %s report already exists" %(elem[0])
     else:
-        if elem.find('SLHC') != -1:
-            if (elem > "CMSSW_6_2_0_SLHC7" and elem != 'CMSSW_7_0_0_XROOTD'):
+        if elem[0].find('SLHC') != -1:
+            if (elem[0] > "CMSSW_6_2_0_SLHC7" and elem[0] != 'CMSSW_7_0_0_XROOTD'):
             #if elem == 'CMSSW_7_1_0_pre3': #test purposes only
-                print "SEQUENCES > Report to do: %s from %s" %(elem, existing_releases)
-                os.system("./dqmHisto/createHTMLSequences.sh "+elem+"")
-                print "SEQUENCES > Done!"
-                break
+                print "SEQUENCES > Report to do: %s arch %s" %(elem[0], elem[1])
+                os.system("./dqmHisto/createHTMLSequences.sh "+elem[0]+" "+ elem[1] + " " + "auto:upgrade2019")
+               # print "SEQUENCES > Done!"
+               # break
+        else:
+            if ((elem[0] > min_release and elem[0] != 'CMSSW_7_0_0_XROOTD')):
+                print "SEQUENCES > Report to do: %s arch %s" %(elem[0], elem[1])
+                print "./dqmHisto/createHTMLSequences.sh "+elem[0]+" "+ elem[1] + "auto:mc"
+                os.system("./dqmHisto/createHTMLSequences.sh "+elem[0]+" "+ elem[1] + " "+ "auto:mc")
+                #print "SEQUENCES > Done!"
+                #break

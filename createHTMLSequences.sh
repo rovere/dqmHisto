@@ -4,6 +4,8 @@ createRelease()
 {
     #cd /build/rovere/dqmOfflineSequences
     cd dqmOfflineSequences
+    export SCRAM_ARCH=$ARCH
+    echo $SCRAM_ARCH
     scram p "$RELEASE"
 
     if [ $? -eq 0 ]; then
@@ -28,15 +30,23 @@ createSequences()
     echo "working directory: $PWD and files"
     pwd & ls
     ##GEN-SIM step
-    cmsDriver.py SingleMuPt10.cfi -s GEN,SIM,DIGI:pdigi_valid,L1,DIGI2RAW,HLT:GRun \
-      -n 2 --eventcontent FEVTDEBUGHLT --datatier FEVTDEBUGHLT \
-      --conditions auto:startup_GRun --mc --no_exec
-    cmsRun SingleMuPt10_cfi_GEN_SIM_DIGI_L1_DIGI2RAW_HLT.py
+    if [ "$CONDS" = "auto:mc" ];then
+    cmsDriver.py SingleMuPt10.cfi -s GEN,SIM,DIGI:pdigi_valid,L1,DIGI2RAW \
+      -n 2 --eventcontent FEVTDEBUG --datatier FEVTDEBUG \
+      --conditions ${CONDS} --mc --no_exec
+    else
+      cmsDriver.py SingleMuPt10.cfi -s GEN,SIM,DIGI:pdigi_valid,L1,DIGI2RAW \
+        -n 2 --eventcontent FEVTDEBUG --datatier FEVTDEBUG \
+        --conditions auto:upgradePLS3 --mc --no_exec  \
+        --customise SLHCUpgradeSimulations/Configuration/postLS1Customs.customisePostLS1,\
+        SLHCUpgradeSimulations/Configuration/phase1TkCustoms.customise --geometry Extended2017
+    fi
+    cmsRun SingleMuPt10_cfi_GEN_SIM_DIGI_L1_DIGI2RAW.py
 
     ##DQM step
     cmsDriver.py step2_MC1_4 -s RAW2DIGI,RECO,DQM -n 2 \
-      --filein file:SingleMuPt10_cfi_GEN_SIM_DIGI_L1_DIGI2RAW_HLT.root \
-      --eventcontent RECOSIM,DQM --datatier RECOSIM,DQMROOT --conditions auto:mc \
+      --filein file:SingleMuPt10_cfi_GEN_SIM_DIGI_L1_DIGI2RAW.root \
+      --eventcontent RECOSIM,DQM --datatier RECOSIM,DQMROOT --conditions ${CONDS} \
       --mc --no_exec --scenario ${SCENARIO}
     igprof -d -t cmsRun -mp -z -o step2_DQM_RECO_DQM.gz \
       cmsRun step2_MC1_4_RAW2DIGI_RECO_DQM.py &> /dev/null
@@ -54,8 +64,8 @@ createSequences()
 
     ##Validation step
     cmsDriver.py step2_MC1_4 -s RAW2DIGI,RECO,VALIDATION -n 2 \
-      --filein file:SingleMuPt10_cfi_GEN_SIM_DIGI_L1_DIGI2RAW_HLT.root \
-      --eventcontent RECOSIM,DQM --datatier RECOSIM,DQMROOT --conditions auto:mc --mc \
+      --filein file:SingleMuPt10_cfi_GEN_SIM_DIGI_L1_DIGI2RAW.root \
+      --eventcontent RECOSIM,DQM --datatier RECOSIM,DQMROOT --conditions ${CONDS} --mc \
       --no_exec --scenario ${SCENARIO}
     igprof -d -t cmsRun -mp -z -o step2_DQM_RECO_VALIDATION.gz \
       cmsRun step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py &> /dev/null
@@ -72,8 +82,8 @@ createSequences()
 
     #Validation:preprod
     cmsDriver.py step2_MC1_4 -s RAW2DIGI,RECO,VALIDATION:validation_preprod -n 2 \
-      --filein file:SingleMuPt10_cfi_GEN_SIM_DIGI_L1_DIGI2RAW_HLT.root \
-      --eventcontent RECOSIM,DQM --datatier RECOSIM,DQMROOT --conditions auto:mc --mc \
+      --filein file:SingleMuPt10_cfi_GEN_SIM_DIGI_L1_DIGI2RAW.root \
+      --eventcontent RECOSIM,DQM --datatier RECOSIM,DQMROOT --conditions $CONDS --mc \
       --no_exec --scenario ${SCENARIO}
     igprof -d -t cmsRun -mp -z -o step2_DQM_RECO_VALIDATION.gz \
       cmsRun step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py &> /dev/null
@@ -90,8 +100,8 @@ createSequences()
 
     #Validation:prod
     cmsDriver.py step2_MC1_4 -s RAW2DIGI,RECO,VALIDATION:validation_prod -n 2 \
-      --filein file:SingleMuPt10_cfi_GEN_SIM_DIGI_L1_DIGI2RAW_HLT.root \
-      --eventcontent RECOSIM,DQM --datatier RECOSIM,DQMROOT --conditions auto:mc --mc \
+      --filein file:SingleMuPt10_cfi_GEN_SIM_DIGI_L1_DIGI2RAW.root \
+      --eventcontent RECOSIM,DQM --datatier RECOSIM,DQMROOT --conditions ${CONDS} --mc \
       --no_exec --scenario ${SCENARIO}
     igprof -d -t cmsRun -mp -z -o step2_DQM_RECO_VALIDATION.gz \
       cmsRun step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py &> /dev/null
@@ -108,9 +118,9 @@ createSequences()
 
     #Harvesting step
     cmsDriver.py step3_MC1_4 -s HARVESTING:dqmHarvesting --harvesting AtRunEnd \
-      --conditions auto:mc --filetype DQM \
+      --conditions ${CONDS} --filetype DQM \
       --filein file:step2_MC1_4_RAW2DIGI_RECO_DQM_inDQM.root --mc --no_exec \
-      --scenario {{scenario}}
+      --scenario ${SCENARIO}
     igprof -d -t cmsRun -mp -z -o step3_HARVESTING.gz \
       cmsRun step3_MC1_4_HARVESTING.py &> /dev/null
     igprof-analyse -g -d -v -r MEM_TOTAL -s step3_HARVESTING.gz | sqlite3 \
@@ -139,6 +149,8 @@ export CMS_PATH=/afs/cern.ch/cms
 
 SER=6_2
 RELEASE=$1
+ARCH=$2
+CONDS=$3
 echo "Using release ${RELEASE}"
 #RELEASE=CMSSW_5_2_3_patch1
 cd /home/DQMHisto
