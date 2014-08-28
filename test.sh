@@ -6,7 +6,7 @@
 #export SCRAM_ARCH="slc5_amd64_gcc472"
 #echo $SCRAM_ARCH
 echo "working for $1"
-source /afs/cern.ch/cms/LCG/LCG-2/UI/cms_ui_env.sh
+#source /afs/cern.ch/cms/LCG/LCG-2/UI/cms_ui_env.sh
 export PATH=$PATH:/afs/cern.ch/cms/common
 export CVSROOT=:gserver:cmssw.cvs.cern.ch:/local/reps/CMSSW
 export CMS_PATH=/afs/cern.ch/cms
@@ -15,12 +15,12 @@ scram p "$1"
 cd "$1/src"
 eval $(scram r -sh)
 #addpkg DQMServices/Components
-git cms-addpkg DQMServices/Components
+git cms-addpkg DQMServices/Components -q
 echo "$LOCALRT"
 scram b -j 2
 #sed -i 's/process.DQMStore.verbose = cms.untracked.int32(2)/process.DQMStore.verbose = cms.untracked.int32(5)/g' "$LOCALRT/src/DQMServices/Components/python/test/customDQM.py"
 sed -i 's/process.load("DQMServices.Components.DQMStoreStats_cfi")/process.load("DQMServices.Components.DQMStoreStats_cfi")\n    process.DQMStore.verbose = cms.untracked.int32(5)/g' "$LOCALRT/src/DQMServices/Components/python/test/customRecoSim.py"
-cat $LOCALRT/src/DQMServices/Components/python/test/customRecoSim.py
+#cat $LOCALRT/src/DQMServices/Components/python/test/customRecoSim.py
 #scram b -j 2
 echo "  --^.^-- Lets run WhiteRabbit! --^.^--"
 cd "$LOCALRT/src/DQMServices/Components/test"
