@@ -105,7 +105,7 @@ class visitor:
                                                                                  prettyInt(t[3]), \
                                                                                  prettyInt(t[4]), \
                                                                                  prettyFloat((t[0]+t[1]+t[2]+t[3]+t[4])/1024./1024.))
-        link = '<a href=http://cmslxr.fnal.gov/lxr/ident?i=' + type_() + '>' + type_() + '</a> ' + stats + '\n'
+        link = '<a href=http://cmssdt.cern.ch/SDT/lxr/ident?i=' + type_() + '>' + type_() + '</a> ' + stats + '\n'
         out.write(link + ', label <a href=' + lbl_() + '.html>' + lbl_() +'</a>, defined in ' + filename_ + '</li>\n')
         tmpout = open('./html/'+lbl_() + '.html','w')
         tmpout.write(preamble())
