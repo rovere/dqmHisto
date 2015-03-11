@@ -22,7 +22,7 @@ removeRelease()
     cd ../..
     ls -lh
     echo "Lets remove release from working space: $RELEASE"
-#    rm -rf $RELEASE
+    rm -rf $RELEASE
 }
 
 createSequences()
