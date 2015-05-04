@@ -94,8 +94,10 @@ def fill_dictionaries(filename):
         m = re.match(histo, f.strip('\n'))
         if m:
             histogram_name = m.group(1)
-            call_stack[histogram_name] = []
-            continue
+            if histogram_name in call_stack:
+                continue
+            call_stack[histogram_name] = [] ## this will take only last entry of histogram in logs
+            continue                        ## what to do with multiple entries? with harvesting step?
         m = re.match(call, f.strip('\n'))
         if m:
             key = hasher(m.group(1))
@@ -103,6 +105,8 @@ def fill_dictionaries(filename):
                 stack[key] = m.group(1)
                 if not m.group(1) in function_stack:
                     function_stack[m.group(1)] = []
+            if len(call_stack[histogram_name]) >= 10: ## lame implementation for now
+                continue                              ## we should check with histo booked only on Harvesting
             call_stack[histogram_name].append(key)
             function_stack[m.group(1)].append(histogram_name)
     print "Done importing information"
