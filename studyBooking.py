@@ -88,6 +88,7 @@ def fill_dictionaries(filename):
 
     global stack
     global call_stack
+
     f = open(filename)
     histogram_name = None
     for f in f.readlines():
@@ -96,6 +97,7 @@ def fill_dictionaries(filename):
             histogram_name = m.group(1)
             if histogram_name in call_stack:
                 continue
+
             call_stack[histogram_name] = [] ## this will take only last entry of histogram in logs
             continue                        ## what to do with multiple entries? with harvesting step?
         m = re.match(call, f.strip('\n'))
@@ -105,8 +107,10 @@ def fill_dictionaries(filename):
                 stack[key] = m.group(1)
                 if not m.group(1) in function_stack:
                     function_stack[m.group(1)] = []
+
             if len(call_stack[histogram_name]) >= 10: ## lame implementation for now
                 continue                              ## we should check with histo booked only on Harvesting
+
             call_stack[histogram_name].append(key)
             function_stack[m.group(1)].append(histogram_name)
     print "Done importing information"
@@ -115,7 +119,7 @@ def readPickles(call_stack_file, stack_file, function_stack_file):
     """
     Helper function to read call_stack.pkl and stack.pkl files and
     fill in the corresponding dictionaries. The files to be read must
-    be supplied by the user namely call_stack.pkl stack.pkl. 
+    be supplied by the user namely call_stack.pkl stack.pkl.
     NO CHECKS ARE PERFORMED TOVALIDATE THE CORRECTNESS OF THE ORDER.
     """
 
@@ -143,18 +147,22 @@ def writePickles(work_dir):
     global stack
     global call_stack
     global function_stack
+    print "##DEBUG## writing pickles"
     call_stack_w = open(os.path.join(work_dir,'call_stack.pkl'), 'w')
     stack_w = open(os.path.join(work_dir,'stack.pkl'), 'w')
     function_stack_w = open(os.path.join(work_dir,'function_stack.pkl'), 'w')
     cPickle.dump(call_stack, call_stack_w)
     cPickle.dump(stack, stack_w)
     cPickle.dump(function_stack, function_stack_w)
-    
+    ## we want to keep clear of global dictionarys
+    call_stack = {}
+    function_stack = {}
+    stack = {}
 
 #if __name__ == '__main__':
 def searchInfo(search_input, file_name=None, call_stack_file = None, stack_file = None, function_stack_file = None):
     """
-    Main method for searching hashed pickle files. 
+    Main method for searching hashed pickle files.
     Input is histogram name to be converted to regexp and searched.
     """
 
@@ -181,6 +189,7 @@ def searchInfo(search_input, file_name=None, call_stack_file = None, stack_file 
     return results
 
 def searchFunctionStack(search_input, file_name=None, call_stack_file=None, stack_file=None, function_stack_file=None):
+
     if not readPickles(call_stack_file, stack_file, function_stack_file):
         fill_dictionaries(file_name)
         work_dir = os.sep.join(file_name.split(os.sep)[:-1]) # get the base path to directory where histograms log exists
