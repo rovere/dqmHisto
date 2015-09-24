@@ -89,6 +89,10 @@ def fill_dictionaries(filename):
     global stack
     global call_stack
 
+    #before filling we want to clear existing entries in global dicts
+    stack = {}
+    call_stack = {}
+
     f = open(filename)
     histogram_name = None
     for f in f.readlines():
@@ -97,7 +101,6 @@ def fill_dictionaries(filename):
             histogram_name = m.group(1)
             if histogram_name in call_stack:
                 continue
-
             call_stack[histogram_name] = [] ## this will take only last entry of histogram in logs
             continue                        ## what to do with multiple entries? with harvesting step?
         m = re.match(call, f.strip('\n'))
@@ -107,10 +110,8 @@ def fill_dictionaries(filename):
                 stack[key] = m.group(1)
                 if not m.group(1) in function_stack:
                     function_stack[m.group(1)] = []
-
             if len(call_stack[histogram_name]) >= 10: ## lame implementation for now
                 continue                              ## we should check with histo booked only on Harvesting
-
             call_stack[histogram_name].append(key)
             function_stack[m.group(1)].append(histogram_name)
     print "Done importing information"
@@ -126,6 +127,7 @@ def readPickles(call_stack_file, stack_file, function_stack_file):
     global stack
     global call_stack
     global function_stack
+
     if call_stack_file != None and stack_file != None and function_stack_file != None:
         call_stack_w = open(call_stack_file, 'r')
         stack_w = open(stack_file, 'r')
@@ -147,17 +149,13 @@ def writePickles(work_dir):
     global stack
     global call_stack
     global function_stack
-    print "##DEBUG## writing pickles"
+
     call_stack_w = open(os.path.join(work_dir,'call_stack.pkl'), 'w')
     stack_w = open(os.path.join(work_dir,'stack.pkl'), 'w')
     function_stack_w = open(os.path.join(work_dir,'function_stack.pkl'), 'w')
     cPickle.dump(call_stack, call_stack_w)
     cPickle.dump(stack, stack_w)
     cPickle.dump(function_stack, function_stack_w)
-    ## we want to keep clear of global dictionarys
-    call_stack = {}
-    function_stack = {}
-    stack = {}
 
 #if __name__ == '__main__':
 def searchInfo(search_input, file_name=None, call_stack_file = None, stack_file = None, function_stack_file = None):
@@ -183,8 +181,8 @@ def searchInfo(search_input, file_name=None, call_stack_file = None, stack_file 
                 m = re.match(function_library, stack[calls])
                 if m:
                     results[histogram].append("\t%s\n\t  %s" % (m.group(1), m.group(2)))
-                else:
-                    print results[histogram].append(calls)
+                #else:
+                #    print results[histogram].append(calls)
     print "Found %d results" % len(results.keys())
     return results
 
