@@ -158,7 +158,9 @@ def writePickles(work_dir):
     cPickle.dump(function_stack, function_stack_w)
 
 #if __name__ == '__main__':
-def searchInfo(search_input, file_name=None, call_stack_file = None, stack_file = None, function_stack_file = None):
+def searchInfo(search_input, file_name=None,
+        call_stack_file = None, stack_file = None, function_stack_file = None):
+
     """
     Main method for searching hashed pickle files.
     Input is histogram name to be converted to regexp and searched.
@@ -181,12 +183,12 @@ def searchInfo(search_input, file_name=None, call_stack_file = None, stack_file 
                 m = re.match(function_library, stack[calls])
                 if m:
                     results[histogram].append("\t%s\n\t  %s" % (m.group(1), m.group(2)))
-                #else:
-                #    print results[histogram].append(calls)
+
     print "Found %d results" % len(results.keys())
     return results
 
-def searchFunctionStack(search_input, file_name=None, call_stack_file=None, stack_file=None, function_stack_file=None):
+def searchFunctionStack(search_input, file_name=None,
+        call_stack_file=None, stack_file=None, function_stack_file=None):
 
     if not readPickles(call_stack_file, stack_file, function_stack_file):
         fill_dictionaries(file_name)
