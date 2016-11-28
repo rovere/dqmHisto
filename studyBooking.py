@@ -166,10 +166,15 @@ def searchInfo(search_input, file_name=None,
     Input is histogram name to be converted to regexp and searched.
     """
 
-    if not readPickles(call_stack_file, stack_file, function_stack_file):
-        fill_dictionaries(file_name)
-        work_dir = os.sep.join(file_name.split(os.sep)[:-1]) # get the base path to directory where histograms log exists
-        writePickles(work_dir)
+    try:
+        if not readPickles(call_stack_file, stack_file, function_stack_file):
+            fill_dictionaries(file_name)
+            work_dir = os.sep.join(file_name.split(os.sep)[:-1]) # get the base path to directory where histograms log exists
+            writePickles(work_dir)
+    except Exception as ex:
+        print "ERROR while generating input files: %s" % (str(ex))
+        return {"error": "Error: %s" % (str(ex))}
+
     search = None
     try:
         search = re.compile(search_input)
@@ -190,10 +195,15 @@ def searchInfo(search_input, file_name=None,
 def searchFunctionStack(search_input, file_name=None,
         call_stack_file=None, stack_file=None, function_stack_file=None):
 
-    if not readPickles(call_stack_file, stack_file, function_stack_file):
-        fill_dictionaries(file_name)
-        work_dir = os.sep.join(file_name.split(os.sep)[:-1]) # get the base path to directory where histograms log exists
-        writePickles(work_dir)
+    try:
+        if not readPickles(call_stack_file, stack_file, function_stack_file):
+            fill_dictionaries(file_name)
+            work_dir = os.sep.join(file_name.split(os.sep)[:-1]) # get the base path to directory where histograms log exists
+            writePickles(work_dir)
+    except Exception as ex:
+        print "ERROR while generating input files: %s" % (str(ex))
+        return {"error": "Error: %s" % (str(ex))}
+
     search = None
     try:
         search = re.compile(search_input)
