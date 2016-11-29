@@ -26,3 +26,4 @@ for report in existing_reports:
                 os.remove(os.path.join(__report_dir, report, "histogramBookingBT.log"))
             else:
                 print "wrong number of files: ", report
+
