@@ -25,6 +25,56 @@ removeRelease()
     rm -rf $RELEASE
 }
 
+createPhaseISequence()
+{
+  echo "working directory: $PWD and files"
+# GEN-SIM
+  cmsDriver.py TTbar_13TeV_TuneCUETP8M1_cfi  --conditions auto:phase1_2017_realistic \
+    -n 2 --era Run2_2017 --eventcontent FEVTDEBUG --relval 9000,50 -s GEN,SIM \
+    --datatier GEN-SIM --beamspot Realistic50ns13TeVCollision --geometry DB:Extended \
+    --fileout file:step1.root
+  if [ $? -ne 0 ]; then
+    return 1
+  fi
+
+#DIGI
+  cmsDriver.py step2  --conditions auto:phase1_2017_realistic \
+    -s DIGI:pdigi_valid,L1,DIGI2RAW,HLT:@relval2016 --datatier GEN-SIM-DIGI-RAW -n -1 \
+    --geometry DB:Extended --era Run2_2017 --eventcontent FEVTDEBUGHLT \
+    --filein file:step1.root  --fileout file:step2.root
+  if [ $? -ne 0 ]; then
+    return 1
+  fi
+
+# RECO-DQM-VALIDATION
+  cmsDriver.py step3  --conditions auto:phase1_2017_realistic -n -1 \
+    --era Run2_2017 --eventcontent RECOSIM,MINIAODSIM,DQM \
+    -s RAW2DIGI,L1Reco,RECO,VALIDATION:@standardValidation,DQM:@standardDQM \
+    --datatier GEN-SIM-RECO,MINIAODSIM,DQMIO --geometry DB:Extended \
+    --filein file:step2.root  --fileout file:step3.root
+  if [ $? -ne 0 ]; then
+    return 1
+  fi
+
+  mkdir -p /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__PhaseI/step2
+  cp -pr html  /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__PhaseI/step2
+  sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_DQM -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}__PhaseI/step2/html/index.html\" >${RELEASE} - Step2 - DQM+VALIDATION </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
+
+# HARVESTING
+  cmsDriver.py step5  --conditions auto:phase1_2017_realistic \
+    -s HARVESTING:@standardValidation+@standardDQM --era Run2_2017 \
+    --filein file:step3_inDQM.root --scenario pp --filetype DQM \
+    --geometry DB:Extended --mc -n 1  --fileout file:step5.root
+
+  if [ $? -ne 0 ]; then
+    return 1
+  fi
+
+  mkdir -p /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__PhaseI/step3
+  cp -pr html /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__PhaseI/step3
+  sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_HAR -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}__PhaseI/step3/html/index.html\" >${RELEASE} - Step3 - HARVESTING </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
+}
+
 createSequences()
 {
     echo "working directory: $PWD and files"
@@ -141,6 +191,7 @@ makeSequences()
   do
     createSequences
   done
+  createPhaseISequence
 }
 
 export PATH=$PATH:/afs/cern.ch/cms/common
