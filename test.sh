@@ -6,10 +6,12 @@
 export SCRAM_ARCH="slc6_amd64_gcc530"
 #echo $SCRAM_ARCH
 echo "working for $1"
-export PATH=$PATH:/afs/cern.ch/cms/common
-export CVSROOT=:gserver:cmssw.cvs.cern.ch:/local/reps/CMSSW
-export CMS_PATH=/afs/cern.ch/cms
+export PATH=$PATH:/cvmfs/cms.cern.ch/common/
+export CMS_PATH=/cvmfs/cms.cern.ch/
+
 echo $PATH
+
+ls -l /cvmfs/cms.cern.ch
 scram p "$1"
 cd "$1/src"
 eval $(scram r -sh)
