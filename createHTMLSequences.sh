@@ -187,17 +187,18 @@ createSequences()
 
 makeSequences()
 {
-  for SCENARIO in cosmics pp HeavyIons
+  for SCENARIO in cosmics HeavyIons pp
   do
     createSequences
   done
   createPhaseISequence
 }
 
-export PATH=$PATH:/afs/cern.ch/cms/common
-export CVSROOT=:gserver:cmssw.cvs.cern.ch:/local/reps/CMSSW
-export CMS_PATH=/afs/cern.ch/cms
+export PATH=$PATH:/cvmfs/cms.cern.ch/common/
+export CMS_PATH=/cvmfs/cms.cern.ch/
 
+##ls cvmfs in case its not mounted, to make autofs to mount it
+ls -l /cvmfs/cms.cern.ch
 SER=6_2
 RELEASE=$1
 ARCH=$2
