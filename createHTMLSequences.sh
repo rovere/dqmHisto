@@ -81,21 +81,21 @@ createSequences()
     pwd & ls
     ##GEN-SIM step
     if [ "$CONDS" = "auto:mc" ];then
-    cmsDriver.py SingleMuPt10.cfi -s GEN,SIM,DIGI:pdigi_valid,L1,DIGI2RAW \
+    cmsDriver.py SingleMuPt10_pythia8.cfi -s GEN,SIM,DIGI:pdigi_valid,L1,DIGI2RAW \
       -n 2 --eventcontent FEVTDEBUG --datatier FEVTDEBUG \
       --conditions ${CONDS} --mc --no_exec
     else
-      cmsDriver.py SingleMuPt10.cfi -s GEN,SIM,DIGI:pdigi_valid,L1,DIGI2RAW \
+      cmsDriver.py SingleMuPt10_pythia8.cfi -s GEN,SIM,DIGI:pdigi_valid,L1,DIGI2RAW \
         -n 2 --eventcontent FEVTDEBUG --datatier FEVTDEBUG \
         --conditions auto:upgradePLS3 --mc --no_exec  \
         --customise SLHCUpgradeSimulations/Configuration/postLS1Customs.customisePostLS1,\
         SLHCUpgradeSimulations/Configuration/phase1TkCustoms.customise --geometry Extended2017
     fi
-    cmsRun SingleMuPt10_cfi_GEN_SIM_DIGI_L1_DIGI2RAW.py
+    cmsRun SingleMuPt10_pythia8_cfi_GEN_SIM_DIGI_L1_DIGI2RAW.py
 
     ##DQM step
     cmsDriver.py step2_MC1_4 -s RAW2DIGI,RECO,DQM -n 2 \
-      --filein file:SingleMuPt10_cfi_GEN_SIM_DIGI_L1_DIGI2RAW.root \
+      --filein file:SingleMuPt10_pythia8_cfi_GEN_SIM_DIGI_L1_DIGI2RAW.root \
       --eventcontent RECOSIM,DQM --datatier RECOSIM,DQMROOT --conditions ${CONDS} \
       --mc --no_exec --scenario ${SCENARIO}
     igprof -d -t cmsRun -mp -z -o step2_DQM_RECO_DQM.gz \
@@ -106,7 +106,7 @@ createSequences()
     ./py2html_new.py step2_MC1_4_RAW2DIGI_RECO_DQM.py step2_DQM_RECO_DQM_TOT.sql3
     echo "dqm return code: $?"
     if [ $? -ne 0 ]; then
-	return 1
+      return 1
     fi
     mkdir -p /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}/step2
     cp -pr html  /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}/step2
@@ -114,7 +114,7 @@ createSequences()
 
     ##Validation step
     cmsDriver.py step2_MC1_4 -s RAW2DIGI,RECO,VALIDATION -n 2 \
-      --filein file:SingleMuPt10_cfi_GEN_SIM_DIGI_L1_DIGI2RAW.root \
+      --filein file:SingleMuPt10_pythia8_cfi_GEN_SIM_DIGI_L1_DIGI2RAW.root \
       --eventcontent RECOSIM,DQM --datatier RECOSIM,DQMROOT --conditions ${CONDS} --mc \
       --no_exec --scenario ${SCENARIO}
     igprof -d -t cmsRun -mp -z -o step2_DQM_RECO_VALIDATION.gz \
@@ -124,7 +124,7 @@ createSequences()
     ./py2html_new.py step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py step2_DQM_RECO_VALIDATION_TOT.sql3
     echo "val return code: $?"
     if [ $? -ne 0 ]; then
-        return 1
+      return 1
     fi
     mkdir -p /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__val/step2
     cp -pr html  /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__val/step2
@@ -132,7 +132,7 @@ createSequences()
 
     #Validation:preprod
     cmsDriver.py step2_MC1_4 -s RAW2DIGI,RECO,VALIDATION:validation_preprod -n 2 \
-      --filein file:SingleMuPt10_cfi_GEN_SIM_DIGI_L1_DIGI2RAW.root \
+      --filein file:SingleMuPt10_pythia8_cfi_GEN_SIM_DIGI_L1_DIGI2RAW.root \
       --eventcontent RECOSIM,DQM --datatier RECOSIM,DQMROOT --conditions $CONDS --mc \
       --no_exec --scenario ${SCENARIO}
     igprof -d -t cmsRun -mp -z -o step2_DQM_RECO_VALIDATION.gz \
@@ -142,7 +142,7 @@ createSequences()
     ./py2html_new.py step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py step2_DQM_RECO_VALIDATION_TOT.sql3
     echo "val:preprod return code: $?"
     if [ $? -ne 0 ]; then
-	return 1
+      return 1
     fi
     mkdir -p /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__valpreprod/step2
     cp -pr html  /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__valpreprod/step2
@@ -150,7 +150,7 @@ createSequences()
 
     #Validation:prod
     cmsDriver.py step2_MC1_4 -s RAW2DIGI,RECO,VALIDATION:validation_prod -n 2 \
-      --filein file:SingleMuPt10_cfi_GEN_SIM_DIGI_L1_DIGI2RAW.root \
+      --filein file:SingleMuPt10_pythia8_cfi_GEN_SIM_DIGI_L1_DIGI2RAW.root \
       --eventcontent RECOSIM,DQM --datatier RECOSIM,DQMROOT --conditions ${CONDS} --mc \
       --no_exec --scenario ${SCENARIO}
     igprof -d -t cmsRun -mp -z -o step2_DQM_RECO_VALIDATION.gz \
@@ -160,7 +160,7 @@ createSequences()
     ./py2html_new.py step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py step2_DQM_RECO_VALIDATION_TOT.sql3
     echo "val:prod return code: $?"
     if [ $? -ne 0 ]; then
-	return 1
+      return 1
     fi
     mkdir -p /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__valprod/step2
     cp -pr html  /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__valprod/step2
@@ -178,7 +178,7 @@ createSequences()
     ./py2html_new.py step3_MC1_4_HARVESTING.py step3_HARVESTING_TOT.sql3
     echo "harvesting return code: $?"
     if [ $? -ne 0 ]; then
-	return 1
+      return 1
     fi
     mkdir -p /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}/step3
     cp -pr html /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}/step3
