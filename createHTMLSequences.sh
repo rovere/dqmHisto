@@ -58,7 +58,7 @@ createPhaseISequence()
 
   mkdir -p /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__PhaseI/step2
   cp -pr html  /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__PhaseI/step2
-  sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_DQM -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}__PhaseI/step2/html/index.html\" >${RELEASE} - Step2 - DQM+VALIDATION </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
+  sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_DQM -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}__PhaseI/step2/html/index.html\" >${RELEASE} - Step2 - PhaseI DQM+VALIDATION </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
 
 # HARVESTING
   cmsDriver.py step5  --conditions auto:phase1_2017_realistic \
@@ -72,7 +72,7 @@ createPhaseISequence()
 
   mkdir -p /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__PhaseI/step3
   cp -pr html /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__PhaseI/step3
-  sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_HAR -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}__PhaseI/step3/html/index.html\" >${RELEASE} - Step3 - HARVESTING </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
+  sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_HAR -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}__PhaseI/step3/html/index.html\" >${RELEASE} - Step3 - PhaseI HARVESTING </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
 }
 
 createSequences()
