@@ -55,9 +55,10 @@ createPhaseISequence()
   if [ $? -ne 0 ]; then
     return 1
   fi
+  ./py2html_new.py step3_RAW2DIGI_L1Reco_RECO_VALIDATION_DQM.py
 
   mkdir -p /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__PhaseI/step2
-  cp -pr html  /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__PhaseI/step2
+  mv html  /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__PhaseI/step2
   sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_DQM -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}__PhaseI/step2/html/index.html\" >${RELEASE} - Step2 - PhaseI DQM+VALIDATION </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
 
 # HARVESTING
@@ -69,9 +70,10 @@ createPhaseISequence()
   if [ $? -ne 0 ]; then
     return 1
   fi
+  ./py2html_new.py step5_HARVESTING.py
 
   mkdir -p /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__PhaseI/step3
-  cp -pr html /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__PhaseI/step3
+  mv html /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__PhaseI/step3
   sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_HAR -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}__PhaseI/step3/html/index.html\" >${RELEASE} - Step3 - PhaseI HARVESTING </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
 }
 
@@ -109,7 +111,7 @@ createSequences()
       return 1
     fi
     mkdir -p /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}/step2
-    cp -pr html  /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}/step2
+    mv html  /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}/step2
     sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_DQM -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}/step2/html/index.html\" >${RELEASE} - Step2 - DQM </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
 
     ##Validation step
@@ -127,7 +129,7 @@ createSequences()
       return 1
     fi
     mkdir -p /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__val/step2
-    cp -pr html  /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__val/step2
+    mv html  /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__val/step2
     sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_VAL -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}__val/step2/html/index.html\" >${RELEASE} - Step2 - VALIDATION </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
 
     #Validation:preprod
@@ -145,7 +147,7 @@ createSequences()
       return 1
     fi
     mkdir -p /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__valpreprod/step2
-    cp -pr html  /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__valpreprod/step2
+    mv html  /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__valpreprod/step2
     sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_VALPREPROD -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}__valpreprod/step2/html/index.html\" >${RELEASE} - Step2 - VALIDATION PREPROD </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
 
     #Validation:prod
@@ -163,7 +165,7 @@ createSequences()
       return 1
     fi
     mkdir -p /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__valprod/step2
-    cp -pr html  /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__valprod/step2
+    mv html  /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__valprod/step2
     sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_VALPROD -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}__valprod/step2/html/index.html\" >${RELEASE} - Step2 - VALIDATION PROD </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
 
     #Harvesting step
@@ -181,7 +183,7 @@ createSequences()
       return 1
     fi
     mkdir -p /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}/step3
-    cp -pr html /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}/step3
+    mv html /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}/step3
     sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_HAR -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}/step3/html/index.html\" >${RELEASE} - Step3 - HARVESTING </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
 }
 
