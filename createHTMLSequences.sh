@@ -107,7 +107,7 @@ createSequences()
 
     igprof-analyse -g -d -v -r MEM_TOTAL -s step2_DQM_RECO_DQM.gz | sqlite3 \
       step2_DQM_RECO_DQM_TOT.sql3
-    ./py2html_new.py  -i step2_MC1_4_RAW2DIGI_RECO_DQM.py step2_DQM_RECO_DQM_TOT.sql3 -o .
+    ./py2html_new.py  -i step2_MC1_4_RAW2DIGI_RECO_DQM.py -p step2_DQM_RECO_DQM_TOT.sql3 -o .
     echo "dqm return code: $?"
     if [ $? -ne 0 ]; then
       return 1
@@ -125,7 +125,7 @@ createSequences()
       cmsRun step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py &> /dev/null
     igprof-analyse -g -d -v -r MEM_TOTAL -s step2_DQM_RECO_VALIDATION.gz | sqlite3 \
       step2_DQM_RECO_VALIDATION_TOT.sql3
-    ./py2html_new.py  -i step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py step2_DQM_RECO_VALIDATION_TOT.sql3 -o .
+    ./py2html_new.py  -i step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py -p step2_DQM_RECO_VALIDATION_TOT.sql3 -o .
     echo "val return code: $?"
     if [ $? -ne 0 ]; then
       return 1
@@ -143,7 +143,7 @@ createSequences()
       cmsRun step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py &> /dev/null
     igprof-analyse -g -d -v -r MEM_TOTAL -s step2_DQM_RECO_VALIDATION.gz | sqlite3 \
       step2_DQM_RECO_VALIDATION_TOT.sql3
-    ./py2html_new.py  -i step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py step2_DQM_RECO_VALIDATION_TOT.sql3 -o .
+    ./py2html_new.py  -i step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py -p step2_DQM_RECO_VALIDATION_TOT.sql3 -o .
     echo "val:preprod return code: $?"
     if [ $? -ne 0 ]; then
       return 1
@@ -161,7 +161,7 @@ createSequences()
       cmsRun step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py &> /dev/null
     igprof-analyse -g -d -v -r MEM_TOTAL -s step2_DQM_RECO_VALIDATION.gz | sqlite3 \
       step2_DQM_RECO_VALIDATION_TOT.sql3
-    ./py2html_new.py  -i step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py step2_DQM_RECO_VALIDATION_TOT.sql3 -o .
+    ./py2html_new.py  -i step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py -p step2_DQM_RECO_VALIDATION_TOT.sql3 -o .
     echo "val:prod return code: $?"
     if [ $? -ne 0 ]; then
       return 1
@@ -179,7 +179,7 @@ createSequences()
       cmsRun step3_MC1_4_HARVESTING.py &> /dev/null
     igprof-analyse -g -d -v -r MEM_TOTAL -s step3_HARVESTING.gz | sqlite3 \
       step3_HARVESTING_TOT.sql3
-    ./py2html_new.py  -i step3_MC1_4_HARVESTING.py step3_HARVESTING_TOT.sql3 -o .
+    ./py2html_new.py  -i step3_MC1_4_HARVESTING.py -p step3_HARVESTING_TOT.sql3 -o .
     echo "harvesting return code: $?"
     if [ $? -ne 0 ]; then
       return 1

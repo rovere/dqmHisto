@@ -13,17 +13,17 @@ locale.setlocale(locale.LC_ALL, 'en_US')
 numLabel = 0
 
 class Visitor:
-    def __init__(self, out, process, steps, prefix, ignore_igprof):
+    def __init__(self, out, process, steps, prefix, connection=None):
         self.out = out
         self.process_ = process
         self.prefix_ = prefix
-        self.ignore_igprof_ = ignore_igprof
         self.env = os.getenv('CMSSW_RELEASE_BASE')
         self.t = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0}
         self.level_ = 0
         self.level = {}
         self.level[self.level_] = 0
         self.steps_ = steps
+        self.conn = connection
 
     def reset(self):
         self.t = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0}
@@ -105,9 +105,9 @@ class Visitor:
           toCheck = step
           if toCheck == 'ctor':
             toCheck = type_()
-          if not self.ignore_igprof_:
+          if self.conn != None:
             try:
-              cur = conn.execute("select mainrows.cumulative_count, name from symbols inner join mainrows on mainrows.symbol_id = symbols.id where name like '%s::%s%%';" % (type_(),toCheck))
+              cur = self.conn.execute("select mainrows.cumulative_count, name from symbols inner join mainrows on mainrows.symbol_id = symbols.id where name like '%s::%s%%';" % (type_(),toCheck))
               for r in cur:
                 t[counter] = int(r[0])
               if len(t) != counter+1:
@@ -200,7 +200,7 @@ def checkRel():
         print 'You must set a proper CMSSW environment first. Quitting.'
         sys.exit(1)
 
-def dumpESProducer(value, out, steps, prefix, ignore_igprof):
+def dumpESProducer(value, out, steps, prefix, conn=None):
     type_ = getattr(value, 'type_', 'Not Available')
     filename_ = getattr(value, '_filename', 'Not Available')
     lbl_ = getattr(value, 'label_', 'Not Available')
@@ -212,7 +212,7 @@ def dumpESProducer(value, out, steps, prefix, ignore_igprof):
       toCheck = step
       if toCheck == 'ctor':
         toCheck = type_()
-      if not ignore_igprof:
+      if conn != None:
         try:
           cur = conn.execute("select mainrows.cumulative_count, name from symbols inner join mainrows on mainrows.symbol_id = symbols.id where name like '%s::%s%%';" % (type_(),toCheck))
           for r in cur:
@@ -261,8 +261,10 @@ def dumpESProducer(value, out, steps, prefix, ignore_igprof):
 def main(args):
   towrite = 'index.html'
 
-  if not args.ignore_igprof:
+  if args.igprof_out != '':
       conn = sqlite3.connect(sys.argv[2])
+  else:
+      conn = None
 
   steps = ('ctor', 'beginJob', 'beginRun', 'beginLuminosityBlock', 'analyze')
   pwd = os.getenv('PWD') +'/'
@@ -296,7 +298,7 @@ def main(args):
 
   out.write(preamble())
   out.write( '<h1>Paths</h1><ol>\n')
-  v = Visitor(out, a.process, steps, args.output, args.ignore_igprof)
+  v = Visitor(out, a.process, steps, args.output, conn)
   for k in a.process.paths.keys():
       out.write('<li class="Path">Path %s</li>\n' % k)
       a.process.paths[k].visit(v)
@@ -313,7 +315,7 @@ def main(args):
   out.write( '<h1>ES Producers</h1>\n')
   for k in a.process.es_producers_().keys():
       out.write('<H2>ESProducer %s</H2>\n' % k)
-      dumpESProducer(a.process.es_producers[k], out, steps, args.output, args.ignore_igprof)
+      dumpESProducer(a.process.es_producers[k], out, steps, args.output, conn)
 
   out.write(endDocument())
 
@@ -321,8 +323,8 @@ def main(args):
 if __name__ == '__main__':
   parser = argparse.ArgumentParser()
   parser.add_argument('-i', '--input_cfg', required=True, default='', type=str, help='Input cfg to parse')
+  parser.add_argument('-p', '--igprof_out', required=False, default='', type=str, help='IgProf output to parse')
   parser.add_argument('-o', '--output', required=True, default='./html', type=str, help='Output directory where to store the fully expanded, html-ize configuration')
-  parser.add_argument('--ignore_igprof', required=False, default=True, help='Ignore igprof results in assembling the expanded configuration.')
 
   args = parser.parse_args()
   main(args)
