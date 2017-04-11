@@ -57,8 +57,8 @@ createPhaseIISequence()
     return 1
   fi
 # Get rid of unscheduled execution to have a meaningful dump
-  sed -i -e 's/\(.*convertToUnscheduled(.*\)/#\1/' step3_RAW2DIGI_L1Reco_RECO_EI_PAT_VALIDATION_DQM.py
-  ./py2html_new.py  -i step3_RAW2DIGI_L1Reco_RECO_EI_PAT_VALIDATION_DQM.py -o .
+  sed -i -e 's/\(.*convertToUnscheduled(.*\)/#\1/' step3_RAW2DIGI_L1Reco_RECO_PAT_VALIDATION_DQM.py
+  ./py2html_new.py  -i step3_RAW2DIGI_L1Reco_RECO_PAT_VALIDATION_DQM.py -o .
 
   mkdir -p /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__PhaseII/step2
   mv html  /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__PhaseII/step2
