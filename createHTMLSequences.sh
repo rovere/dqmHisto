@@ -50,7 +50,7 @@ createPhaseIISequence()
 # RECO-DQM-VALIDATION
   cmsDriver.py step3  --conditions auto:phase2_realistic -n -1 \
     --era Phase2C2 --eventcontent RECOSIM,MINIAODSIM,DQM --runUnscheduled  \
-    -s RAW2DIGI,L1Reco,RECO,PAT,VALIDATION:@iphase2Validation+@miniAODValidation,DQM:@phase2+@miniAODDQM \
+    -s RAW2DIGI,L1Reco,RECO,PAT,VALIDATION:@phase2Validation+@miniAODValidation,DQM:@phase2+@miniAODDQM \
     --datatier GEN-SIM-RECO,MINIAODSIM,DQMIO --geometry Extended2023D11 \
     --filein file:step2.root  --fileout file:step3.root
   if [ $? -ne 0 ]; then
