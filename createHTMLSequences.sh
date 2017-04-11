@@ -25,6 +25,61 @@ removeRelease()
     rm -rf $RELEASE
 }
 
+createPhaseIISequence()
+{
+# Taken from wfl 24034 of runTheMatrix
+  echo "working directory: $PWD and files"
+# GEN-SIM
+  cmsDriver.py TTbar_14TeV_TuneCUETP8M1_cfi --conditions auto:phase2_realistic \
+    -n 2 --era Phase2C2 --eventcontent FEVTDEBUG --relval 9000,50 -s GEN,SIM \
+    --datatier GEN-SIM --beamspot HLLHC14TeV --geometry Extended2023D11 \
+    --fileout file:step1.root
+  if [ $? -ne 0 ]; then
+    return 1
+  fi
+
+#DIGI
+  cmsDriver.py step2  --conditions auto:phase2_realistic \
+    -s DIGI:pdigi_valid,L1,L1TrackTrigger,DIGI2RAW,HLT:@fake2 --datatier GEN-SIM-DIGI-RAW -n -1 \
+    --geometry Extended2023D11 --era Phase2C2 --eventcontent FEVTDEBUGHLT \
+    --filein file:step1.root  --fileout file:step2.root
+  if [ $? -ne 0 ]; then
+    return 1
+  fi
+
+# RECO-DQM-VALIDATION
+  cmsDriver.py step3  --conditions auto:phase2_realistic -n -1 \
+    --era Phase2C2 --eventcontent RECOSIM,MINIAODSIM,DQM --runUnscheduled  \
+    -s RAW2DIGI,L1Reco,RECO,PAT,VALIDATION:@iphase2Validation+@miniAODValidation,DQM:@phase2+@miniAODDQM \
+    --datatier GEN-SIM-RECO,MINIAODSIM,DQMIO --geometry Extended2023D11 \
+    --filein file:step2.root  --fileout file:step3.root
+  if [ $? -ne 0 ]; then
+    return 1
+  fi
+# Get rid of unscheduled execution to have a meaningful dump
+  sed -i -e 's/\(.*convertToUnscheduled(.*\)/#\1/' step3_RAW2DIGI_L1Reco_RECO_PAT_VALIDATION_DQM.py
+  ./py2html_new.py  -i step3_RAW2DIGI_L1Reco_RECO_PAT_VALIDATION_DQM.py -o .
+
+  mkdir -p /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__PhaseII/step2
+  mv html  /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__PhaseII/step2
+  sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_DQM -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}__PhaseII/step2/html/index.html\" >${RELEASE} - Step2 - PhaseII DQM+VALIDATION </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
+
+# HARVESTING
+  cmsDriver.py step5  --conditions auto:phase2_realistic \
+    -s HARVESTING:@phase2Validation+@phase2++@miniAODValidation+@miniAODDQM --era Phase2C2 \
+    --filein file:step3_inDQM.root --scenario pp --filetype DQM \
+    --geometry Extended2023D11 --mc -n 1  --fileout file:step5.root
+
+  if [ $? -ne 0 ]; then
+    return 1
+  fi
+  ./py2html_new.py  -i step5_HARVESTING.py -o .
+
+  mkdir -p /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__PhaseII/step3
+  mv html /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__PhaseII/step3
+  sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_HAR -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}__PhaseII/step3/html/index.html\" >${RELEASE} - Step3 - PhaseII HARVESTING </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
+}
+
 createPhaseISequence()
 {
   echo "working directory: $PWD and files"
@@ -196,6 +251,7 @@ makeSequences()
     createSequences
   done
   createPhaseISequence
+  createPhaseIISequence
 }
 
 export PATH=$PATH:/cvmfs/cms.cern.ch/common/
