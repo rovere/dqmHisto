@@ -36,13 +36,15 @@ class Visitor:
                 self.out.write('<ol><li class=sequence>Sequence %s</li>\n' % '--w/o label found--')
             self.level_ +=1
             self.level[self.level_] = 0
-        elif type(value) == cms.Task:
-            if (value.hasLabel_()):
-                self.out.write('<ol><li class=task>Task %s</li>\n' % value.label_())
-            else:
-                self.out.write('<ol><li class=task>Task %s</li>\n' % '--w/o label found--')
-            self.level_ +=1
-            self.level[self.level_] = 0
+        elif 'Task' in dir(cms):
+            ## check for older versions where Task was not defined
+            if type(value) == cms.Task:
+                if (value.hasLabel_()):
+                    self.out.write('<ol><li class=task>Task %s</li>\n' % value.label_())
+                else:
+                    self.out.write('<ol><li class=task>Task %s</li>\n' % '--w/o label found--')
+                self.level_ +=1
+                self.level[self.level_] = 0
         else:
             if type(value) == cms.EDAnalyzer:
                 self.out.write( '<li class="EDAnalyzer">EDAnalyzer ' )
@@ -54,34 +56,72 @@ class Visitor:
             for i in range(len(mem)):
                 self.t[i] += int(mem[i])
                 self.level[self.level_] += int(mem[i])
-    def leave(self, value):
-        if type(value) == cms.Sequence or type(value) == cms.Task:
-            if value.hasLabel_():
-                self.out.write('<span style="color:#000000">(%s, %s, %s, %s, %s) %f [%f] - %s </span>' % (prettyInt(self.t[0]),\
-                                                                  prettyInt(self.t[1]),\
-                                                                  prettyInt(self.t[2]),\
-                                                                  prettyInt(self.t[3]),\
-                                                                  prettyInt(self.t[4]),\
-                                                                  (self.t[0]+self.t[1]+self.t[2]+self.t[3]+self.t[4])/1024./1024.,\
-                                                                  self.level[self.level_]/1024./1024.,\
-                                                                  value.label_()))
+
+    def write_output(self, value, task=False):
+        if task == True:
+            if type(value) == cms.Sequence or type(value) == cms.Task:
+                if value.hasLabel_():
+                    self.out.write('<span style="color:#000000">(%s, %s, %s, %s, %s) %f [%f] - %s </span>' % (prettyInt(self.t[0]),\
+                        prettyInt(self.t[1]),\
+                        prettyInt(self.t[2]),\
+                        prettyInt(self.t[3]),\
+                        prettyInt(self.t[4]),\
+                        (self.t[0]+self.t[1]+self.t[2]+self.t[3]+self.t[4])/1024./1024.,\
+                        self.level[self.level_]/1024./1024.,\
+                        value.label_()))
+
+                else:
+                    self.out.write('<span style="color:#000000">(%s, %s, %s, %s, %s) %f [%f] - %s </span>' % (prettyInt(self.t[0]),\
+                        prettyInt(self.t[1]),\
+                        prettyInt(self.t[2]),\
+                        prettyInt(self.t[3]),\
+                        prettyInt(self.t[4]),\
+                        (self.t[0]+self.t[1]+self.t[2]+self.t[3]+self.t[4])/1024./1024.,\
+                        self.level[self.level_]/1024./1024.,\
+                        '--No label found--'))
+
+                self.level_ -= 1
+                if self.level_ > 0:
+                    self.level[self.level_] += self.level[self.level_+1]
+                    self.level[self.level_+1] = 0
+                self.out.write( '</ol>\n')
             else:
-                self.out.write('<span style="color:#000000">(%s, %s, %s, %s, %s) %f [%f] - %s </span>' % (prettyInt(self.t[0]),\
-                                                                  prettyInt(self.t[1]),\
-                                                                  prettyInt(self.t[2]),\
-                                                                  prettyInt(self.t[3]),\
-                                                                  prettyInt(self.t[4]),\
-                                                                  (self.t[0]+self.t[1]+self.t[2]+self.t[3]+self.t[4])/1024./1024.,\
-                                                                  self.level[self.level_]/1024./1024.,\
-                                                                  '--No label found--'))
-#            print self.level
-            self.level_ -= 1
-            if self.level_ > 0:
-                self.level[self.level_] += self.level[self.level_+1]
-                self.level[self.level_+1] = 0
-            self.out.write( '</ol>\n')
+                self.out.write( '</li>\n')
         else:
-            self.out.write( '</li>\n')
+            if type(value) == cms.Sequence:
+                if value.hasLabel_():
+                    self.out.write('<span style="color:#000000">(%s, %s, %s, %s, %s) %f [%f] - %s </span>' % (prettyInt(self.t[0]),\
+                        prettyInt(self.t[1]),\
+                        prettyInt(self.t[2]),\
+                        prettyInt(self.t[3]),\
+                        prettyInt(self.t[4]),\
+                        (self.t[0]+self.t[1]+self.t[2]+self.t[3]+self.t[4])/1024./1024.,\
+                        self.level[self.level_]/1024./1024.,\
+                        value.label_()))
+
+                else:
+                    self.out.write('<span style="color:#000000">(%s, %s, %s, %s, %s) %f [%f] - %s </span>' % (prettyInt(self.t[0]),\
+                        prettyInt(self.t[1]),\
+                        prettyInt(self.t[2]),\
+                        prettyInt(self.t[3]),\
+                        prettyInt(self.t[4]),\
+                        (self.t[0]+self.t[1]+self.t[2]+self.t[3]+self.t[4])/1024./1024.,\
+                        self.level[self.level_]/1024./1024.,\
+                        '--No label found--'))
+
+                self.level_ -= 1
+                if self.level_ > 0:
+                    self.level[self.level_] += self.level[self.level_+1]
+                    self.level[self.level_+1] = 0
+                self.out.write( '</ol>\n')
+            else:
+                self.out.write( '</li>\n')
+
+    def leave(self, value):
+        if 'Task' in dir(cms):
+            self.write_output(value, task=True)
+        else:
+            self.write_output(value, task=False)
 
     def fake(self):
         return 'Not_Available'
