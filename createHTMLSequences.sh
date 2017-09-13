@@ -31,8 +31,8 @@ createPhaseIISequence()
   echo "working directory: $PWD and files"
 # GEN-SIM
   cmsDriver.py TTbar_14TeV_TuneCUETP8M1_cfi --conditions auto:phase2_realistic \
-    -n 2 --era Phase2C2 --eventcontent FEVTDEBUG --relval 9000,50 -s GEN,SIM \
-    --datatier GEN-SIM --beamspot HLLHC14TeV --geometry Extended2023D11 \
+    -n 2 --era Phase2 --eventcontent FEVTDEBUG --relval 9000,50 -s GEN,SIM \
+    --datatier GEN-SIM --beamspot HLLHC14TeV --geometry Extended2023D20 \
     --fileout file:step1.root
   if [ $? -ne 0 ]; then
     return 1
@@ -41,7 +41,7 @@ createPhaseIISequence()
 #DIGI
   cmsDriver.py step2  --conditions auto:phase2_realistic \
     -s DIGI:pdigi_valid,L1,L1TrackTrigger,DIGI2RAW,HLT:@fake2 --datatier GEN-SIM-DIGI-RAW -n -1 \
-    --geometry Extended2023D11 --era Phase2C2 --eventcontent FEVTDEBUGHLT \
+    --geometry Extended2023D20 --era Phase2 --eventcontent FEVTDEBUGHLT \
     --filein file:step1.root  --fileout file:step2.root
   if [ $? -ne 0 ]; then
     return 1
@@ -49,9 +49,9 @@ createPhaseIISequence()
 
 # RECO-DQM-VALIDATION
   cmsDriver.py step3  --conditions auto:phase2_realistic -n -1 \
-    --era Phase2C2 --eventcontent RECOSIM,MINIAODSIM,DQM --runUnscheduled  \
+    --era Phase2 --eventcontent RECOSIM,MINIAODSIM,DQM --runUnscheduled  \
     -s RAW2DIGI,L1Reco,RECO,PAT,VALIDATION:@phase2Validation+@miniAODValidation,DQM:@phase2+@miniAODDQM \
-    --datatier GEN-SIM-RECO,MINIAODSIM,DQMIO --geometry Extended2023D11 \
+    --datatier GEN-SIM-RECO,MINIAODSIM,DQMIO --geometry Extended2023D20 \
     --filein file:step2.root  --fileout file:step3.root
   if [ $? -ne 0 ]; then
     return 1
@@ -66,9 +66,9 @@ createPhaseIISequence()
 
 # HARVESTING
   cmsDriver.py step5  --conditions auto:phase2_realistic \
-    -s HARVESTING:@phase2Validation+@phase2++@miniAODValidation+@miniAODDQM --era Phase2C2 \
+    -s HARVESTING:@phase2Validation+@phase2++@miniAODValidation+@miniAODDQM --era Phase2 \
     --filein file:step3_inDQM.root --scenario pp --filetype DQM \
-    --geometry Extended2023D11 --mc -n 1  --fileout file:step5.root
+    --geometry Extended2023D20 --mc -n 1  --fileout file:step5.root
 
   if [ $? -ne 0 ]; then
     return 1
@@ -157,12 +157,9 @@ createSequences()
       --filein file:SingleMuPt10_pythia8_cfi_GEN_SIM_DIGI_L1_DIGI2RAW.root \
       --eventcontent RECOSIM,DQM --datatier RECOSIM,DQMROOT --conditions ${CONDS} \
       --mc --no_exec --scenario ${SCENARIO}
-    igprof -d -t cmsRun -mp -z -o step2_DQM_RECO_DQM.gz \
-      cmsRun step2_MC1_4_RAW2DIGI_RECO_DQM.py &> /dev/null
 
-    igprof-analyse -g -d -v -r MEM_TOTAL -s step2_DQM_RECO_DQM.gz | sqlite3 \
-      step2_DQM_RECO_DQM_TOT.sql3
-    ./py2html_new.py  -i step2_MC1_4_RAW2DIGI_RECO_DQM.py -p step2_DQM_RECO_DQM_TOT.sql3 -o .
+    cmsRun step2_MC1_4_RAW2DIGI_RECO_DQM.py
+    ./py2html_new.py  -i step2_MC1_4_RAW2DIGI_RECO_DQM.py -o .
     echo "dqm return code: $?"
     if [ $? -ne 0 ]; then
       return 1
@@ -176,11 +173,9 @@ createSequences()
       --filein file:SingleMuPt10_pythia8_cfi_GEN_SIM_DIGI_L1_DIGI2RAW.root \
       --eventcontent RECOSIM,DQM --datatier RECOSIM,DQMROOT --conditions ${CONDS} --mc \
       --no_exec --scenario ${SCENARIO}
-    igprof -d -t cmsRun -mp -z -o step2_DQM_RECO_VALIDATION.gz \
-      cmsRun step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py &> /dev/null
-    igprof-analyse -g -d -v -r MEM_TOTAL -s step2_DQM_RECO_VALIDATION.gz | sqlite3 \
-      step2_DQM_RECO_VALIDATION_TOT.sql3
-    ./py2html_new.py  -i step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py -p step2_DQM_RECO_VALIDATION_TOT.sql3 -o .
+
+    cmsRun step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py
+    ./py2html_new.py  -i step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py -o .
     echo "val return code: $?"
     if [ $? -ne 0 ]; then
       return 1
@@ -194,11 +189,9 @@ createSequences()
       --filein file:SingleMuPt10_pythia8_cfi_GEN_SIM_DIGI_L1_DIGI2RAW.root \
       --eventcontent RECOSIM,DQM --datatier RECOSIM,DQMROOT --conditions $CONDS --mc \
       --no_exec --scenario ${SCENARIO}
-    igprof -d -t cmsRun -mp -z -o step2_DQM_RECO_VALIDATION.gz \
-      cmsRun step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py &> /dev/null
-    igprof-analyse -g -d -v -r MEM_TOTAL -s step2_DQM_RECO_VALIDATION.gz | sqlite3 \
-      step2_DQM_RECO_VALIDATION_TOT.sql3
-    ./py2html_new.py  -i step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py -p step2_DQM_RECO_VALIDATION_TOT.sql3 -o .
+
+    cmsRun step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py
+    ./py2html_new.py  -i step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py -o .
     echo "val:preprod return code: $?"
     if [ $? -ne 0 ]; then
       return 1
@@ -212,11 +205,9 @@ createSequences()
       --filein file:SingleMuPt10_pythia8_cfi_GEN_SIM_DIGI_L1_DIGI2RAW.root \
       --eventcontent RECOSIM,DQM --datatier RECOSIM,DQMROOT --conditions ${CONDS} --mc \
       --no_exec --scenario ${SCENARIO}
-    igprof -d -t cmsRun -mp -z -o step2_DQM_RECO_VALIDATION.gz \
-      cmsRun step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py &> /dev/null
-    igprof-analyse -g -d -v -r MEM_TOTAL -s step2_DQM_RECO_VALIDATION.gz | sqlite3 \
-      step2_DQM_RECO_VALIDATION_TOT.sql3
-    ./py2html_new.py  -i step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py -p step2_DQM_RECO_VALIDATION_TOT.sql3 -o .
+
+    cmsRun step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py &> /dev/null
+    ./py2html_new.py  -i step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py -o .
     echo "val:prod return code: $?"
     if [ $? -ne 0 ]; then
       return 1
@@ -230,11 +221,9 @@ createSequences()
       --conditions ${CONDS} --filetype DQM \
       --filein file:step2_MC1_4_RAW2DIGI_RECO_DQM_inDQM.root --mc --no_exec \
       --scenario ${SCENARIO}
-    igprof -d -t cmsRun -mp -z -o step3_HARVESTING.gz \
-      cmsRun step3_MC1_4_HARVESTING.py &> /dev/null
-    igprof-analyse -g -d -v -r MEM_TOTAL -s step3_HARVESTING.gz | sqlite3 \
-      step3_HARVESTING_TOT.sql3
-    ./py2html_new.py  -i step3_MC1_4_HARVESTING.py -p step3_HARVESTING_TOT.sql3 -o .
+
+    cmsRun step3_MC1_4_HARVESTING.py
+    ./py2html_new.py  -i step3_MC1_4_HARVESTING.py -o .
     echo "harvesting return code: $?"
     if [ $? -ne 0 ]; then
       return 1
