@@ -36,7 +36,7 @@ class Visitor:
                 self.out.write('<ol><li class=sequence>Sequence %s</li>\n' % '--w/o label found--')
             self.level_ +=1
             self.level[self.level_] = 0
-        elif 'Task' in dir(cms):
+        elif 'Task' in dir(cms) and type(value) == cms.Task:
             ## check for older versions where Task was not defined
             if type(value) == cms.Task:
                 if (value.hasLabel_()):
