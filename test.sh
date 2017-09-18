@@ -3,7 +3,7 @@
 #  Shell script to set CMSSW release, check-out DQM Tests.
 #  Runs whiteRabbit's 3rd test with verbosity set to 5 to get histogram booking log file
 
-export SCRAM_ARCH="slc6_amd64_gcc530"
+export SCRAM_ARCH="slc6_amd64_gcc630"
 #echo $SCRAM_ARCH
 echo "working for $1"
 export PATH=$PATH:/cvmfs/cms.cern.ch/common/
@@ -11,13 +11,13 @@ export CMS_PATH=/cvmfs/cms.cern.ch/
 
 echo $PATH
 
-ls -l /cvmfs/cms.cern.ch
+ls -l /cvmfs/cms.cern.ch > /dev/null
 scram p "$1"
 cd "$1/src"
 eval $(scram r -sh)
 git cms-addpkg DQMServices/Components -q
-echo "$LOCALRT"
 scram b -j 2
+
 #sed -i 's/process.DQMStore.verbose = cms.untracked.int32(2)/process.DQMStore.verbose = cms.untracked.int32(5)/g' "$LOCALRT/src/DQMServices/Components/python/test/customDQM.py"
 sed -i 's/process.load("DQMServices.Components.DQMStoreStats_cfi")/process.load("DQMServices.Components.DQMStoreStats_cfi")\n    process.DQMStore.verbose = cms.untracked.int32(5)/g' "$LOCALRT/src/DQMServices/Components/python/test/customRecoSim.py"
 sed -i 's/process.load("DQMServices.Components.DQMStoreStats_cfi")/process.load("DQMServices.Components.DQMStoreStats_cfi")\n    process.DQMStore.verbose = cms.untracked.int32(5)/g' "$LOCALRT/src/DQMServices/Components/python/test/customHarvesting.py"
