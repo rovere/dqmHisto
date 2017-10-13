@@ -17,6 +17,7 @@ createRelease()
 
     return 0
 }
+
 removeRelease()
 {
     cd ../..
@@ -25,37 +26,64 @@ removeRelease()
     rm -rf $RELEASE
 }
 
+createCrashReport()
+{
+  mkdir -p /home/DQMHisto/DQMSequences/${2}__${3}${4}
+  echo '<html><head><title>Config Browser</title></head><body><pre>' > index.html
+  echo "${1}" >> index.html #output the cmsDriver itself
+  echo '</pre><pre>' >> index.html
+  cat ${5}_out.txt >> index.html
+  echo '</pre></body></html>' >> index.html
+  mv index.html /home/DQMHisto/DQMSequences/${2}__${3}${4}
+}
+
 createPhaseIISequence()
 {
 # Taken from wfl 24034 of runTheMatrix
   echo "working directory: $PWD and files"
 # GEN-SIM
-  cmsDriver.py TTbar_14TeV_TuneCUETP8M1_cfi --conditions auto:phase2_realistic \
+  CMD="cmsDriver.py TTbar_14TeV_TuneCUETP8M1_cfi --conditions auto:phase2_realistic \
     -n 2 --era Phase2 --eventcontent FEVTDEBUG --relval 9000,50 -s GEN,SIM \
     --datatier GEN-SIM --beamspot HLLHC14TeV --geometry Extended2023D20 \
-    --fileout file:step1.root
+    --fileout file:step1.root &> step2_out.txt"
+  eval $CMD
+
   if [ $? -ne 0 ]; then
+    #concat the out file as html
+    createCrashReport "$CMD" "$SCENARIO" "$RELEASE" "__PhaseII/step2/html" "step2"
+    sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_DQM -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}__PhaseII/step2/html/index.html\" >${RELEASE} - Step2 - PhaseII DQM+VALIDATION </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
     return 1
   fi
 
 #DIGI
-  cmsDriver.py step2  --conditions auto:phase2_realistic \
+  CMD="cmsDriver.py step2  --conditions auto:phase2_realistic \
     -s DIGI:pdigi_valid,L1,L1TrackTrigger,DIGI2RAW,HLT:@fake2 --datatier GEN-SIM-DIGI-RAW -n -1 \
     --geometry Extended2023D20 --era Phase2 --eventcontent FEVTDEBUGHLT \
-    --filein file:step1.root  --fileout file:step2.root
+    --filein file:step1.root  --fileout file:step2.root &> step2_out.txt"
+  eval $CMD
+
   if [ $? -ne 0 ]; then
+    #concat the out file as html
+    createCrashReport "$CMD" "$SCENARIO" "$RELEASE" "__PhaseII/step2/html" "step2"
+    sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_DQM -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}__PhaseII/step2/html/index.html\" >${RELEASE} - Step2 - PhaseII DQM+VALIDATION </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
     return 1
   fi
 
 # RECO-DQM-VALIDATION
-  cmsDriver.py step3  --conditions auto:phase2_realistic -n -1 \
+  CMD="cmsDriver.py step3  --conditions auto:phase2_realistic -n -1 \
     --era Phase2 --eventcontent RECOSIM,MINIAODSIM,DQM --runUnscheduled  \
     -s RAW2DIGI,L1Reco,RECO,PAT,VALIDATION:@phase2Validation+@miniAODValidation,DQM:@phase2+@miniAODDQM \
     --datatier GEN-SIM-RECO,MINIAODSIM,DQMIO --geometry Extended2023D20 \
-    --filein file:step2.root  --fileout file:step3.root
+    --filein file:step2.root --fileout file:step3.root &> step2_out.txt"
+  eval $CMD
+
   if [ $? -ne 0 ]; then
+    #concat the out file as html
+    createCrashReport "$CMD" "$SCENARIO" "$RELEASE" "__PhaseII/step2/html" "step2"
+    sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_DQM -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}__PhaseII/step2/html/index.html\" >${RELEASE} - Step2 - PhaseII DQM+VALIDATION </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
     return 1
   fi
+
 # Get rid of unscheduled execution to have a meaningful dump
   sed -i -e 's/\(.*convertToUnscheduled(.*\)/#\1/' step3_RAW2DIGI_L1Reco_RECO_PAT_VALIDATION_DQM.py
   ./py2html_new.py  -i step3_RAW2DIGI_L1Reco_RECO_PAT_VALIDATION_DQM.py -o .
@@ -65,12 +93,16 @@ createPhaseIISequence()
   sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_DQM -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}__PhaseII/step2/html/index.html\" >${RELEASE} - Step2 - PhaseII DQM+VALIDATION </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
 
 # HARVESTING
-  cmsDriver.py step5  --conditions auto:phase2_realistic \
+  CMD="cmsDriver.py step5  --conditions auto:phase2_realistic \
     -s HARVESTING:@phase2Validation+@phase2++@miniAODValidation+@miniAODDQM --era Phase2 \
     --filein file:step3_inDQM.root --scenario pp --filetype DQM \
-    --geometry Extended2023D20 --mc -n 1  --fileout file:step5.root
+    --geometry Extended2023D20 --mc -n 1  --fileout file:step5.root &> step3_out.txt"
+  eval $CMD
 
   if [ $? -ne 0 ]; then
+    #concat the out file as html
+    createCrashReport "$CMD" "$SCENARIO" "$RELEASE" "__PhaseII/step3/html" "step3"
+    sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_HAR -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}__PhaseII/step3/html/index.html\" >${RELEASE} - Step3 - PhaseII HARVESTING </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
     return 1
   fi
   ./py2html_new.py  -i step5_HARVESTING.py -o .
@@ -84,30 +116,45 @@ createPhaseISequence()
 {
   echo "working directory: $PWD and files"
 # GEN-SIM
-  cmsDriver.py TTbar_13TeV_TuneCUETP8M1_cfi  --conditions auto:phase1_2017_realistic \
+  CMD="cmsDriver.py TTbar_13TeV_TuneCUETP8M1_cfi  --conditions auto:phase1_2017_realistic \
     -n 2 --era Run2_2017 --eventcontent FEVTDEBUG --relval 9000,50 -s GEN,SIM \
     --datatier GEN-SIM --beamspot Realistic50ns13TeVCollision --geometry DB:Extended \
-    --fileout file:step1.root
+    --fileout file:step1.root &> step2_out.txt"
+  eval $CMD
+
   if [ $? -ne 0 ]; then
+    #concat the out file as html
+    createCrashReport "$CMD" "$SCENARIO" "$RELEASE" "__PhaseI/step2/html" "step2"
+    sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_DQM -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}__PhaseI/step2/html/index.html\" >${RELEASE} - Step2 - PhaseI DQM+VALIDATION </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
     return 1
   fi
 
 #DIGI
-  cmsDriver.py step2  --conditions auto:phase1_2017_realistic \
+  CMD="cmsDriver.py step2  --conditions auto:phase1_2017_realistic \
     -s DIGI:pdigi_valid,L1,DIGI2RAW,HLT:@relval2017 --datatier GEN-SIM-DIGI-RAW -n -1 \
     --geometry DB:Extended --era Run2_2017 --eventcontent FEVTDEBUGHLT \
-    --filein file:step1.root  --fileout file:step2.root
+    --filein file:step1.root  --fileout file:step2.root &> step2_out.txt"
+  eval $CMD
+
   if [ $? -ne 0 ]; then
+    #concat the out file as html
+    createCrashReport "$CMD" "$SCENARIO" "$RELEASE" "__PhaseI/step2/html" "step2"
+    sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_DQM -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}__PhaseI/step2/html/index.html\" >${RELEASE} - Step2 - PhaseI DQM+VALIDATION </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
     return 1
   fi
 
 # RECO-DQM-VALIDATION
-  cmsDriver.py step3  --conditions auto:phase1_2017_realistic -n -1 \
+  CMD="cmsDriver.py step3  --conditions auto:phase1_2017_realistic -n -1 \
     --era Run2_2017 --eventcontent RECOSIM,MINIAODSIM,DQM --runUnscheduled  \
     -s RAW2DIGI,L1Reco,RECO,EI,PAT,VALIDATION:@standardValidation+@miniAODValidation,DQM:@standardDQM+@miniAODDQM \
     --datatier GEN-SIM-RECO,MINIAODSIM,DQMIO --geometry DB:Extended \
-    --filein file:step2.root  --fileout file:step3.root
+    --filein file:step2.root  --fileout file:step3.root &> step2_out.txt"
+  eval $CMD
+
   if [ $? -ne 0 ]; then
+    #concat the out file as html
+    createCrashReport "$CMD" "$SCENARIO" "$RELEASE" "__PhaseI/step2/html" "step2"
+    sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_DQM -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}__PhaseI/step2/html/index.html\" >${RELEASE} - Step2 - PhaseI DQM+VALIDATION </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
     return 1
   fi
 # Get rid of unscheduled execution to have a meaningful dump
@@ -119,12 +166,16 @@ createPhaseISequence()
   sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_DQM -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}__PhaseI/step2/html/index.html\" >${RELEASE} - Step2 - PhaseI DQM+VALIDATION </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
 
 # HARVESTING
-  cmsDriver.py step5  --conditions auto:phase1_2017_realistic \
+  CMD="cmsDriver.py step5  --conditions auto:phase1_2017_realistic \
     -s HARVESTING:@standardValidation+@standardDQM --era Run2_2017 \
     --filein file:step3_inDQM.root --scenario pp --filetype DQM \
-    --geometry DB:Extended --mc -n 1  --fileout file:step5.root
+    --geometry DB:Extended --mc -n 1  --fileout file:step5.root &> step3_out.txt"
+  eval $CMD
 
   if [ $? -ne 0 ]; then
+    #concat the out file as html
+    createCrashReport "$CMD" "$SCENARIO" "$RELEASE" "__PhaseI/step3/html" "step3"
+    sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_HAR -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}__PhaseI/step3/html/index.html\" >${RELEASE} - Step3 - PhaseI HARVESTING </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
     return 1
   fi
   ./py2html_new.py  -i step5_HARVESTING.py -o .
@@ -140,9 +191,9 @@ createSequences()
     pwd & ls
     ##GEN-SIM step
     if [ "$CONDS" = "auto:mc" ];then
-    cmsDriver.py SingleMuPt10_pythia8.cfi -s GEN,SIM,DIGI:pdigi_valid,L1,DIGI2RAW \
-      -n 2 --eventcontent FEVTDEBUG --datatier FEVTDEBUG \
-      --conditions ${CONDS} --mc --no_exec
+      cmsDriver.py SingleMuPt10_pythia8.cfi -s GEN,SIM,DIGI:pdigi_valid,L1,DIGI2RAW \
+        -n 2 --eventcontent FEVTDEBUG --datatier FEVTDEBUG \
+        --conditions ${CONDS} --mc --no_exec
     else
       cmsDriver.py SingleMuPt10_pythia8.cfi -s GEN,SIM,DIGI:pdigi_valid,L1,DIGI2RAW \
         -n 2 --eventcontent FEVTDEBUG --datatier FEVTDEBUG \
@@ -150,7 +201,16 @@ createSequences()
         --customise SLHCUpgradeSimulations/Configuration/postLS1Customs.customisePostLS1,\
         SLHCUpgradeSimulations/Configuration/phase1TkCustoms.customise --geometry Extended2017
     fi
-    cmsRun SingleMuPt10_pythia8_cfi_GEN_SIM_DIGI_L1_DIGI2RAW.py
+
+    CMD="cmsRun SingleMuPt10_pythia8_cfi_GEN_SIM_DIGI_L1_DIGI2RAW.py &> step2_out.txt"
+    eval $CMD
+    echo "GENSIM return code: $?"
+
+    if [ $? -ne 0 ]; then
+      createCrashReport "$CMD" "$SCENARIO" "$RELEASE" "/step2/html" "step2"
+      sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_DQM -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}/step2/html/index.html\" >${RELEASE} - Step2 - DQM </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
+      return 1
+    fi
 
     ##DQM step
     cmsDriver.py step2_MC1_4 -s RAW2DIGI,RECO,DQM -n 2 \
@@ -158,12 +218,17 @@ createSequences()
       --eventcontent RECOSIM,DQM --datatier RECOSIM,DQMROOT --conditions ${CONDS} \
       --mc --no_exec --scenario ${SCENARIO}
 
-    cmsRun step2_MC1_4_RAW2DIGI_RECO_DQM.py
-    ./py2html_new.py  -i step2_MC1_4_RAW2DIGI_RECO_DQM.py -o .
+    CMD="cmsRun step2_MC1_4_RAW2DIGI_RECO_DQM.py &> step2_out.txt"
+    eval $CMD
     echo "dqm return code: $?"
+
     if [ $? -ne 0 ]; then
+      createCrashReport "$CMD" "$SCENARIO" "$RELEASE" "/step2/html" "step2"
+      sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_DQM -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}/step2/html/index.html\" >${RELEASE} - Step2 - DQM </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
       return 1
     fi
+
+    ./py2html_new.py  -i step2_MC1_4_RAW2DIGI_RECO_DQM.py -o .
     mkdir -p /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}/step2
     mv html  /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}/step2
     sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_DQM -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}/step2/html/index.html\" >${RELEASE} - Step2 - DQM </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
@@ -174,12 +239,17 @@ createSequences()
       --eventcontent RECOSIM,DQM --datatier RECOSIM,DQMROOT --conditions ${CONDS} --mc \
       --no_exec --scenario ${SCENARIO}
 
-    cmsRun step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py
-    ./py2html_new.py  -i step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py -o .
+    CMD="cmsRun step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py &> step2_out.txt"
+    eval $CMD
     echo "val return code: $?"
+
     if [ $? -ne 0 ]; then
+      createCrashReport "$CMD" "$SCENARIO" "$RELEASE" "/step2/html" "step2"
+      sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_VAL -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}__val/step2/html/index.html\" >${RELEASE} - Step2 - VALIDATION </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
       return 1
     fi
+
+    ./py2html_new.py  -i step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py -o .
     mkdir -p /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__val/step2
     mv html  /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__val/step2
     sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_VAL -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}__val/step2/html/index.html\" >${RELEASE} - Step2 - VALIDATION </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
@@ -190,12 +260,17 @@ createSequences()
       --eventcontent RECOSIM,DQM --datatier RECOSIM,DQMROOT --conditions $CONDS --mc \
       --no_exec --scenario ${SCENARIO}
 
-    cmsRun step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py
-    ./py2html_new.py  -i step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py -o .
+    CMD="cmsRun step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py &> step2_out.txt"
+    eval $CMD
     echo "val:preprod return code: $?"
+
     if [ $? -ne 0 ]; then
+      createCrashReport "$CMD" "$SCENARIO" "$RELEASE" "/step2/html" "step2"
+      sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_VALPREPROD -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}__valpreprod/step2/html/index.html\" >${RELEASE} - Step2 - VALIDATION PREPROD </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
       return 1
     fi
+
+    ./py2html_new.py  -i step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py -o .
     mkdir -p /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__valpreprod/step2
     mv html  /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__valpreprod/step2
     sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_VALPREPROD -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}__valpreprod/step2/html/index.html\" >${RELEASE} - Step2 - VALIDATION PREPROD </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
@@ -206,12 +281,17 @@ createSequences()
       --eventcontent RECOSIM,DQM --datatier RECOSIM,DQMROOT --conditions ${CONDS} --mc \
       --no_exec --scenario ${SCENARIO}
 
-    cmsRun step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py &> /dev/null
-    ./py2html_new.py  -i step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py -o .
+    CMD="cmsRun step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py &> step2_out.txt"
+    eval $CMD
     echo "val:prod return code: $?"
+
     if [ $? -ne 0 ]; then
+      createCrashReport "$CMD" "$SCENARIO" "$RELEASE" "/step2/html" "step2"
+      sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_VALPROD -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}__valprod/step2/html/index.html\" >${RELEASE} - Step2 - VALIDATION PROD </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
       return 1
     fi
+
+    ./py2html_new.py  -i step2_MC1_4_RAW2DIGI_RECO_VALIDATION.py -o .
     mkdir -p /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__valprod/step2
     mv html  /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}__valprod/step2
     sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_VALPROD -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}__valprod/step2/html/index.html\" >${RELEASE} - Step2 - VALIDATION PROD </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
@@ -222,12 +302,17 @@ createSequences()
       --filein file:step2_MC1_4_RAW2DIGI_RECO_DQM_inDQM.root --mc --no_exec \
       --scenario ${SCENARIO}
 
-    cmsRun step3_MC1_4_HARVESTING.py
-    ./py2html_new.py  -i step3_MC1_4_HARVESTING.py -o .
+    CMD="cmsRun step3_MC1_4_HARVESTING.py &> step3_out.txt"
+    eval $CMD
     echo "harvesting return code: $?"
+
     if [ $? -ne 0 ]; then
+      createCrashReport "$CMD" "$SCENARIO" "$RELEASE" "/step3/html" "step3"
+      sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_HAR -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}/step3/html/index.html\" >${RELEASE} - Step3 - HARVESTING </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
       return 1
     fi
+
+    ./py2html_new.py  -i step3_MC1_4_HARVESTING.py -o .
     mkdir -p /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}/step3
     mv html /home/DQMHisto/DQMSequences/${SCENARIO}__${RELEASE}/step3
     sed -i -e "s#\(.*<!-- PLACEHOLDER_${SCENARIO}_HAR -->\)#  <li> <a href=\"sequences/${SCENARIO}__${RELEASE}/step3/html/index.html\" >${RELEASE} - Step3 - HARVESTING </a> </li> \n\1#" /home/DQMHisto/dqmHisto/static/config_browser.html
