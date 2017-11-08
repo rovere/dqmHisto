@@ -57,7 +57,7 @@ createPhaseIISequence()
 
 #DIGI
   CMD="cmsDriver.py step2  --conditions auto:phase2_realistic \
-    -s DIGI:pdigi_valid,L1,L1TrackTrigger,DIGI2RAW,HLT:@fake2 --datatier GEN-SIM-DIGI-RAW -n -1 \
+    -s DIGI:pdigi_valid,L1,DIGI2RAW,HLT:@fake2 --datatier GEN-SIM-DIGI-RAW -n -1 \
     --geometry Extended2023D20 --era Phase2 --eventcontent FEVTDEBUGHLT \
     --filein file:step1.root  --fileout file:step2.root &> step2_out.txt"
   eval $CMD
