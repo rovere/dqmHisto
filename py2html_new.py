@@ -31,18 +31,18 @@ class Visitor:
     def enter(self, value):
         if type(value) == cms.Sequence:
             if (value.hasLabel_()):
-                self.out.write('<ol><li class=sequence>Sequence %s</li>\n' % value.label_())
+                self.out.write('<ol><li class=sequence>Sequence %s</li>\n<ol>' % value.label_())
             else:
-                self.out.write('<ol><li class=sequence>Sequence %s</li>\n' % '--w/o label found--')
+                self.out.write('<ol><li class=sequence>Sequence %s</li>\n<ol>' % '--w/o label found--')
             self.level_ +=1
             self.level[self.level_] = 0
         elif 'Task' in dir(cms) and type(value) == cms.Task:
             ## check for older versions where Task was not defined
             if type(value) == cms.Task:
                 if (value.hasLabel_()):
-                    self.out.write('<ol><li class=task>Task %s</li>\n' % value.label_())
+                    self.out.write('<ol><li class=task>Task %s</li>\n<ol>' % value.label_())
                 else:
-                    self.out.write('<ol><li class=task>Task %s</li>\n' % '--w/o label found--')
+                    self.out.write('<ol><li class=task>Task %s</li>\n<ol>' % '--w/o label found--')
                 self.level_ +=1
                 self.level[self.level_] = 0
         else:
@@ -84,7 +84,7 @@ class Visitor:
                 if self.level_ > 0:
                     self.level[self.level_] += self.level[self.level_+1]
                     self.level[self.level_+1] = 0
-                self.out.write( '</ol>\n')
+                self.out.write( '</ol></ol>\n')
             else:
                 self.out.write( '</li>\n')
         else:
@@ -113,7 +113,7 @@ class Visitor:
                 if self.level_ > 0:
                     self.level[self.level_] += self.level[self.level_+1]
                     self.level[self.level_+1] = 0
-                self.out.write( '</ol>\n')
+                self.out.write( '</ol></ol>\n')
             else:
                 self.out.write( '</li>\n')
 
@@ -340,9 +340,10 @@ def main(args):
   out.write( '<h1>Paths</h1><ol>\n')
   v = Visitor(out, a.process, steps, args.output, conn)
   for k in a.process.paths.keys():
-      out.write('<li class="Path">Path %s</li>\n' % k)
+      out.write('<li class="Path">Path %s</li>\n<ol>' % k)
       a.process.paths[k].visit(v)
       v.reset()
+      out.write('</ol>')
 
   out.write( '</ol><h1>End Paths</h1>\n')
   v.reset()
